@@ -16,8 +16,10 @@ public class PingHandlerDispatchR : IRequestHandler<PingDispatchR, string>
 
 public class LoggingBehaviorDispatchR : IRequestPipeline<PingDispatchR, string>
 {
-    public Task<string> Handle(PingDispatchR command, RequestHandlerDelegate<string> next, CancellationToken cancellationToken)
+    public Task<string> Handle(PingDispatchR command, CancellationToken cancellationToken)
     {
-        return next(cancellationToken);
+        return NextPipeline(command, cancellationToken);
     }
+
+    public Func<PingDispatchR, CancellationToken, Task<string>> NextPipeline { get; set; }
 }

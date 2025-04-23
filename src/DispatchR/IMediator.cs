@@ -20,18 +20,20 @@ public class Mediator(IServiceProvider serviceProvider) : IMediator
 
         var handler = serviceProvider.GetRequiredService<IRequestHandler<TRequest, TResponse>>();
         
-        Task<TResponse> RequestHandler(CancellationToken t = default) => handler
-            .Handle(request, cancellationToken);
-
         if (pipelines.Any())
         {
             var handlerWithPipeline = pipelines
                 .OrderByDescending(p => p.Priority)
-                .Aggregate((RequestHandlerDelegate<TResponse>)RequestHandler,
-                (next, pipeline) => (ct) =>
-                    pipeline.Handle(request, next, ct == CancellationToken.None ? cancellationToken : ct));
+                .ToList();
             
-            return handlerWithPipeline(cancellationToken);
+            for (int i = 0; i < pipelines.Count; i++)
+            {
+                handlerWithPipeline[i].SetNext(i == pipelines.Count - 1
+                    ? handler.Handle
+                    : handlerWithPipeline[i + 1].Handle);
+            }
+                
+            return handlerWithPipeline.First().Handle(request, cancellationToken);
         }
 
         return handler.Handle(request, cancellationToken);

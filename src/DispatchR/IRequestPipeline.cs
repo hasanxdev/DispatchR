@@ -2,8 +2,13 @@
 
 public delegate Task<TResponse> RequestHandlerDelegate<TResponse>(CancellationToken t = default);
 
-public interface IRequestPipeline<TRequest, TResponse>
+public interface IRequestPipeline<TRequest, TResponse> : IRequestHandler<TRequest, TResponse>
 {
+    protected Func<TRequest, CancellationToken, Task<TResponse>> NextPipeline { get; set; }
     public virtual int Priority => 1;
-    Task<TResponse> Handle(TRequest command, RequestHandlerDelegate<TResponse> next, CancellationToken cancellationToken);
+
+    internal void SetNext(Func<TRequest, CancellationToken, Task<TResponse>> handler)
+    {
+        NextPipeline = handler;
+    }
 }
