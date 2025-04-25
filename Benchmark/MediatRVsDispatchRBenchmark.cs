@@ -11,6 +11,7 @@ namespace Benchmark;
 
 [MemoryDiagnoser]
 [Orderer(SummaryOrderPolicy.FastestToSlowest, MethodOrderPolicy.Declared)]
+[ThreadingDiagnoser]
 public class MediatRVsDispatchRBenchmark
 {
     private MediatR.IMediator _mediator;
@@ -29,22 +30,30 @@ public class MediatRVsDispatchRBenchmark
         _mediator = _serviceProvider.GetRequiredService<MediatR.IMediator>();
         _dispatcher = _serviceProvider.GetRequiredService<DispatchR.IMediator>();
     }
-    
-    [GlobalCleanup]
-    public void Cleanup()
+
+    [Benchmark]
+    public async Task SendPing_With_MediatR_Parallel_100_000()
     {
-        _serviceProvider.Dispose();
+        await Parallel.ForAsync(1, 100_000, new ParallelOptions(),
+            async (index, ct) => { _ = await _mediator.Send(new PingMediatR(), CancellationToken.None); });
     }
 
     [Benchmark(Baseline = true)]
-    public async Task<string> SendPing_With_MediatR()
+    public async Task SendPing_With_MediatR()
     {
-        return await _mediator.Send(new PingMediatR(), CancellationToken.None);
+        _ = await _mediator.Send(new PingMediatR(), CancellationToken.None);
     }
 
     [Benchmark]
-    public async Task<string> SendPing_With_DispatchR()
+    public async Task SendPing_With_DispatchR_Parallel_100_000()
     {
-        return await _dispatcher.Send(new PingDispatchR(), CancellationToken.None);
+        await Parallel.ForAsync(1, 100_000, new ParallelOptions(),
+            async (index, ct) => { _ = await _dispatcher.Send(new PingDispatchR(), CancellationToken.None); });
+    }
+
+    [Benchmark]
+    public async Task SendPing_With_DispatchR()
+    {
+        _ = await _dispatcher.Send(new PingDispatchR(), CancellationToken.None);
     }
 }

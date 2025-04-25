@@ -1,14 +1,9 @@
 ﻿namespace DispatchR;
 
-public delegate Task<TResponse> RequestHandlerDelegate<TResponse>(CancellationToken t = default);
-
-public interface IRequestPipeline<TRequest, TResponse> : IRequestHandler<TRequest, TResponse>
+public interface IRequestPipeline<TRequest, TResponse> : IRequestHandler<TRequest, TResponse> 
+    where TRequest : class, IRequest, new()
 {
-    protected Func<TRequest, CancellationToken, Task<TResponse>> NextPipeline { get; set; }
-    public virtual int Priority => 1;
-
-    internal void SetNext(Func<TRequest, CancellationToken, Task<TResponse>> handler)
-    {
+    public IRequestHandler<TRequest, TResponse> NextPipeline { get; set; }
+    void IRequestHandler<TRequest, TResponse>.SetNext(IRequestHandler<TRequest, TResponse> handler) =>
         NextPipeline = handler;
-    }
 }

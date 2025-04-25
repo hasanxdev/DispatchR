@@ -3,10 +3,10 @@
 namespace Benchmark;
 
 // Request
-public class PingMediatR : IRequest<string> { }
+public sealed class PingMediatR : IRequest<string> { }
 
 // Handler
-public class PingHandlerMediatR : IRequestHandler<PingMediatR, string>
+public sealed class PingHandlerMediatR : IRequestHandler<PingMediatR, string>
 {
     public Task<string> Handle(PingMediatR request, CancellationToken cancellationToken)
     {
@@ -15,7 +15,7 @@ public class PingHandlerMediatR : IRequestHandler<PingMediatR, string>
 }
 
 
-public class LoggingBehaviorMediat : IPipelineBehavior<PingMediatR, string>
+public sealed class LoggingBehaviorMediat : IPipelineBehavior<PingMediatR, string>
 {
     public Task<string> Handle(PingMediatR request, RequestHandlerDelegate<string> next, CancellationToken cancellationToken)
     {

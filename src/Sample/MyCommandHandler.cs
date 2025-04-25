@@ -9,4 +9,9 @@ public class TempRequestHandler : IRequestHandler<MyCommand, int>
         Console.WriteLine("request handler");
         return Task.FromResult(1);
     }
+
+    public Task<int> Handle<TRequestHandle>(TRequestHandle command, CancellationToken cancellationToken) where TRequestHandle : MyCommand
+    {
+        return Task.FromResult(1);
+    }
 }

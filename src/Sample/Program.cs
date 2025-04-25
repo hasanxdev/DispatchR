@@ -11,9 +11,10 @@ builder.Services.AddDispatchR(typeof(MyCommand).Assembly);
 
 var app = builder.Build();
 var mediator = app.Services.CreateAsyncScope().ServiceProvider.GetRequiredService<IMediator>();
-await mediator.Send(new MyCommand(), CancellationToken.None);
-// await handler.Send(new MyCommand(), CancellationToken.None);
-// Configure the HTTP request pipeline.
+var tt = await mediator.Send<MyCommand, int>(new MyCommand(), CancellationToken.None);
+var tt2 = await mediator.Send<MyCommand, int>(new MyCommand(), CancellationToken.None);
+var tt3 = await mediator.Send<MyCommand, int>(new MyCommand(), CancellationToken.None);
+
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
