@@ -1,6 +1,9 @@
 ﻿using System.Collections.Concurrent;
+using System.Runtime.CompilerServices;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.ObjectPool;
+using ZLinq;
+using ZLinq.Linq;
 
 namespace DispatchR;
 
@@ -12,61 +15,50 @@ public interface IMediator
 
 public sealed class Mediator(IServiceProvider serviceProvider) : IMediator
 {
-    private static readonly ConcurrentDictionary<(Type, Type), List<Type>> HandlerTypesCache = new();
+    private static readonly ConcurrentDictionary<Type, Type[]> HandlerTypesCache = new();
 
     public Task<TResponse> Send<TRequest, TResponse>(IRequest<TRequest, TResponse> command, CancellationToken cancellationToken) where TRequest : class, IRequest, new()
     {
         return SendSimple(command, cancellationToken);
     }
     
-    public Task<TResponse> SendSimple<TRequest, TResponse>(IRequest<TRequest, TResponse> command,
+    private Task<TResponse> SendSimple<TRequest, TResponse>(IRequest<TRequest, TResponse> request,
         CancellationToken cancellationToken) where TRequest : class, IRequest, new()
     {
         IRequestHandler<TRequest, TResponse>? current = null;
-        var handlers = serviceProvider.GetServices<IRequestHandler<TRequest, TResponse>>().ToArray();
-        for (var index = 0; index < handlers.Length; index++)
+        foreach (var handler in serviceProvider.GetServices<IRequestHandler<TRequest, TResponse>>().AsValueEnumerable())
         {
-            var handler = handlers[index];
-            if (index > 0)
-            {
-                handler.SetNext(current!);
-            }
-
+            handler.SetNext(current!);
             current = handler;
         }
 
-        return current!.Handle((TRequest)command, cancellationToken);
+        return current!.Handle(Unsafe.As<TRequest>(request), cancellationToken);
     }
     
     public Task<TResponse> SendWithCache<TRequest, TResponse>(IRequest<TRequest, TResponse> command,
         CancellationToken cancellationToken) where TRequest : class, IRequest, new()
     {
-        var key = (typeof(TRequest), typeof(TResponse));
-        IRequestHandler<TRequest, TResponse>[] handlers;
+        var key = typeof(TRequest);
+        ValueEnumerable<FromEnumerable<IRequestHandler<TRequest, TResponse>>, IRequestHandler<TRequest, TResponse>> handlers;
         if (HandlerTypesCache.TryGetValue(key, out var handlerTypes) is false)
         {
-            handlers = serviceProvider.GetServices<IRequestHandler<TRequest, TResponse>>().ToArray();
-            HandlerTypesCache.TryAdd(key, handlers.Select(h => h.GetType()).ToList());
+            handlers = serviceProvider.GetServices<IRequestHandler<TRequest, TResponse>>().AsValueEnumerable();
+            HandlerTypesCache.TryAdd(key, handlers.Select(static h => h.GetType()).ToArray());
         }
         else
         {
-            handlers = handlerTypes.Select(type => 
-                    (IRequestHandler<TRequest, TResponse>)ActivatorUtilities.CreateInstance(serviceProvider, type))
-                .ToArray();
+            handlers = handlerTypes
+                .Select(type => Unsafe.As<IRequestHandler<TRequest, TResponse>>(ActivatorUtilities.CreateInstance(serviceProvider, type)))
+                .AsValueEnumerable();
         }
             
         IRequestHandler<TRequest, TResponse>? current = null;
-        for (var index = 0; index < handlers.Length; index++)
+        foreach (var handler in handlers)
         {
-            var handler = handlers[index];
-            if (index > 0)
-            {
-                handler.SetNext(current!);
-            }
-
+            handler.SetNext(current!);
             current = handler;
         }
 
-        return current!.Handle((TRequest)command, cancellationToken);
+        return current!.Handle(Unsafe.As<TRequest>(command), cancellationToken);
     }
 }

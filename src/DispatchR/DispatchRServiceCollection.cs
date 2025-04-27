@@ -8,8 +8,7 @@ public static class DispatchRServiceCollection
 {
     public static void AddDispatchR(this IServiceCollection services, Assembly assembly)
     {
-        services.AddSingleton<IMediator, Mediator>();
-        services.AddSingleton<Mediator>();
+        services.AddScoped<IMediator, Mediator>();
 
         assembly.GetTypes()
             .Where(p => p.GetInterfaces().Length >= 1 &&

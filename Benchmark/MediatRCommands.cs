@@ -4,6 +4,7 @@ namespace Benchmark;
 
 // Request
 public sealed class PingMediatR : IRequest<string> { }
+public sealed class PingMediatRWithOutHandler : IRequest<string> { }
 
 // Handler
 public sealed class PingHandlerMediatR : IRequestHandler<PingMediatR, string>

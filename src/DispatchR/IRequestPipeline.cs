@@ -4,6 +4,10 @@ public interface IRequestPipeline<TRequest, TResponse> : IRequestHandler<TReques
     where TRequest : class, IRequest, new()
 {
     public IRequestHandler<TRequest, TResponse> NextPipeline { get; set; }
-    void IRequestHandler<TRequest, TResponse>.SetNext(IRequestHandler<TRequest, TResponse> handler) =>
+
+    IRequestHandler<TRequest, TResponse> IRequestHandler<TRequest, TResponse>.SetNext(IRequestHandler<TRequest, TResponse> handler)
+    {
         NextPipeline = handler;
+        return handler;
+    }
 }

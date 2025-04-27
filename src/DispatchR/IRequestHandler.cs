@@ -4,7 +4,8 @@ public interface IRequestHandler<TRequest, TResponse> where TRequest : class, IR
 {
     Task<TResponse> Handle(TRequest command, CancellationToken cancellationToken);
 
-    internal void SetNext(IRequestHandler<TRequest, TResponse> handler)
+    internal IRequestHandler<TRequest, TResponse> SetNext(IRequestHandler<TRequest, TResponse> handler)
     {
+        return handler;
     }
 }
