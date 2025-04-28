@@ -2,10 +2,10 @@ namespace DispatchR;
 
 public interface IRequestHandler<TRequest, TResponse> where TRequest : class, IRequest, new()
 {
-    Task<TResponse> Handle(TRequest command, CancellationToken cancellationToken);
+    Task<TResponse> Handle(TRequest request, CancellationToken cancellationToken);
 
-    internal IRequestHandler<TRequest, TResponse> SetNext(IRequestHandler<TRequest, TResponse> handler)
+    internal IRequestHandler<TRequest, TResponse> SetNext(ref IRequestHandler<TRequest, TResponse> handler)
     {
-        return handler;
+        return this;
     }
 }

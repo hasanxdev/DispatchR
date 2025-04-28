@@ -2,25 +2,21 @@
 
 namespace Benchmark;
 
-// Request
-public sealed class PingMediatR : IRequest<string> { }
-public sealed class PingMediatRWithOutHandler : IRequest<string> { }
+public sealed class PingMediatR : IRequest<int> { }
+public sealed class PingMediatRWithOutHandler : IRequest<int> { }
 
-// Handler
-public sealed class PingHandlerMediatR : IRequestHandler<PingMediatR, string>
+public sealed class PingHandlerMediatR : IRequestHandler<PingMediatR, int>
 {
-    public Task<string> Handle(PingMediatR request, CancellationToken cancellationToken)
+    public Task<int> Handle(PingMediatR request, CancellationToken cancellationToken)
     {
-        return Task.FromResult("Pong");
+        return Task.FromResult(0);
     }
 }
 
-
-public sealed class LoggingBehaviorMediat : IPipelineBehavior<PingMediatR, string>
+public sealed class LoggingBehaviorMediat : IPipelineBehavior<PingMediatR, int>
 {
-    public Task<string> Handle(PingMediatR request, RequestHandlerDelegate<string> next, CancellationToken cancellationToken)
+    public Task<int> Handle(PingMediatR request, RequestHandlerDelegate<int> next, CancellationToken cancellationToken)
     {
-        // Console.WriteLine("MediatR Logging Behavior");
         return next(cancellationToken);
     }
 }

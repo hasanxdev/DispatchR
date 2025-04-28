@@ -1,13 +1,21 @@
 using System.Reflection;
 using DispatchR;
 using Sample;
-
+    
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
 builder.Services.AddDispatchR(typeof(MyCommand).Assembly);
+
+// builder.Services.AddMediatR(cfg =>
+// {
+//     cfg.Lifetime = ServiceLifetime.Scoped;
+//     cfg.RegisterServicesFromAssemblies(typeof(MyCommand).Assembly);
+// });
+// builder.Services.AddTransient<MediatR.IPipelineBehavior<MyCommand, int>, PipelineBehavior>();
+// builder.Services.AddTransient<MediatR.IPipelineBehavior<MyCommand, int>, Pipeline2>();
 
 var app = builder.Build();
 var mediator = app.Services.CreateAsyncScope().ServiceProvider.GetRequiredService<IMediator>();
