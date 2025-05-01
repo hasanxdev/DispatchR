@@ -8,13 +8,8 @@
 
     <ItemGroup>
       <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.4" />
+      <PackageReference Include="Microsoft.Extensions.ObjectPool" Version="9.0.4" />
       <PackageReference Include="ZLinq" Version="1.4.0" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <Reference Include="Microsoft.Extensions.ObjectPool">
-        <HintPath>..\..\..\..\..\..\..\Program Files\dotnet\shared\Microsoft.AspNetCore.App\9.0.0\Microsoft.Extensions.ObjectPool.dll</HintPath>
-      </Reference>
     </ItemGroup>
 
 </Project>
