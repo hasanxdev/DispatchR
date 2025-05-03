@@ -1,5 +1,7 @@
-﻿using System.Reflection;
+using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
+
+using ZLinq;
 
 namespace DispatchR;
 
@@ -22,10 +24,13 @@ public static class DispatchRServiceCollection
                 services.AddScoped(requestInterface, handler);
             });
     }
-    
-    public static void AddDispatchR(this IServiceCollection services, Assembly assembly)
+
+    public static void AddDispatchR(this IServiceCollection services, Assembly assembly, bool addPipelines = true)
     {
         services.AddDispatchRHandlers(assembly);
+
+        if (!addPipelines)
+            return;
 
         assembly.GetTypes()
             .Where(p => p.GetInterfaces().Length >= 1 &&
@@ -39,59 +44,5 @@ public static class DispatchRServiceCollection
                     .First(p => p.IsGenericType && p.GetGenericTypeDefinition() == typeof(IPipelineBehavior<,>));
                 services.AddScoped(requestInterface.GetInterfaces().First(), handler);
             });
-    }
-        public static void AddDispatchRV1(this IServiceCollection services, Assembly assembly)
-    {
-        services.AddScoped<IMediator, Mediator>();
-
-        var openTypes = new[] { typeof(IRequestHandler<,>), typeof(IPipelineBehavior<,>) };
-        assembly.GetTypes()
-            .AsValueEnumerable()
-            .Where(t => t.IsClass && !t.IsAbstract)
-            .SelectMany(t => t.GetInterfaces()
-                .AsValueEnumerable()
-                .Where(i => i.IsGenericType && openTypes.Contains(i.GetGenericTypeDefinition()))
-                .Select(i => new { ServiceType = i, ImplementationType = t })).ToList()
-            .ForEach(x => services.AddScoped(x.ServiceType, x.ImplementationType));
-    }
-    public static void AddDispatchRV2(this IServiceCollection services, Assembly assembly)
-    {
-        services.AddScoped<IMediator, Mediator>();
-
-        var openTypes = new[] { typeof(IRequestHandler<,>), typeof(IPipelineBehavior<,>) };
-
-        foreach (var type in assembly.GetTypes().AsValueEnumerable())
-        {
-            if (type.IsClass && !type.IsAbstract)
-            {
-                foreach (var @interface in type.GetInterfaces().AsValueEnumerable())
-                {
-                    if (@interface.IsGenericType && openTypes.Contains(@interface.GetGenericTypeDefinition()))
-                    {
-                        services.AddScoped(@interface, type);
-                    }
-                }
-            }
-        }
-    }
-    public static void AddDispatchRV3(this IServiceCollection services, Assembly assembly)
-    {
-        services.AddScoped<IMediator, Mediator>();
-
-        var openTypes = new[] { typeof(IRequestHandler<,>), typeof(IPipelineBehavior<,>) };
-
-        foreach (var type in assembly.GetTypes())
-        {
-            if (type.IsClass && !type.IsAbstract)
-            {
-                foreach (var @interface in type.GetInterfaces())
-                {
-                    if (@interface.IsGenericType && openTypes.Contains(@interface.GetGenericTypeDefinition()))
-                    {
-                        services.AddScoped(@interface, type);
-                    }
-                }
-            }
-        }
     }
 }
