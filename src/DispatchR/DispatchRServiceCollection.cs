@@ -1,5 +1,7 @@
-﻿using System.Reflection;
+using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
+
+using ZLinq;
 
 namespace DispatchR;
 
@@ -22,10 +24,13 @@ public static class DispatchRServiceCollection
                 services.AddScoped(requestInterface, handler);
             });
     }
-    
-    public static void AddDispatchR(this IServiceCollection services, Assembly assembly)
+
+    public static void AddDispatchR(this IServiceCollection services, Assembly assembly, bool addPipelines = true)
     {
         services.AddDispatchRHandlers(assembly);
+
+        if (!addPipelines)
+            return;
 
         assembly.GetTypes()
             .Where(p => p.GetInterfaces().Length >= 1 &&
