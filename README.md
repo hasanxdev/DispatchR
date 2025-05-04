@@ -14,4 +14,7 @@ DispatchR 🚀
 - 🛠️ Built-in DI support
 
 # Bechmark Result:
-![Benchmark Result](./src/Benchmark/result.jpg)
+#### 1. MediatR vs Mediator Source Generator vs DispatchR With Pipeline
+![Benchmark Result](./benchmark/results/with-pipeline-stable.png)
+#### 2. MediatR vs Mediator Source Generator vs DispatchR Without Pipeline
+![Benchmark Result](./benchmark/results/without-pipeline-stable.png)

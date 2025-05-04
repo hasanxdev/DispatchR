@@ -10,25 +10,6 @@ namespace DispatchR;
 
 public static class DispatchRServiceCollection
 {
-    public static void AddDispatchRHandlers(this IServiceCollection services, Assembly assembly)
-    {
-        services.AddScoped<IMediator, Mediator>();
-
-        assembly.GetTypes()
-            .Where(p => p.GetInterfaces().Length >= 1 &&
-                        p.GetInterfaces().Any(p => p.IsGenericType) &&
-                        p.GetInterfaces().First(p => p.IsGenericType).GetGenericTypeDefinition() ==
-                        typeof(IRequestHandler<,>)
-            )
-            .ToList()
-            .ForEach(handler =>
-            {
-                var requestInterface = handler.GetInterfaces()
-                    .First(p => p.IsGenericType && p.GetGenericTypeDefinition() == typeof(IRequestHandler<,>));
-                services.AddScoped(requestInterface, handler);
-            });
-    }
-
     public static void AddDispatchR(this IServiceCollection services, Assembly assembly, bool withPipelines = true)
     {
         services.AddScoped<IMediator, Mediator>();
@@ -92,25 +73,20 @@ public static class DispatchRServiceCollection
             
             var args = handlerInterface.GetGenericArguments();
             var pipelinesType = typeof(IPipelineBehavior<,>).MakeGenericType(args[0], args[1]);
-            services.AddScoped(handlerInterface,  sp =>
+            services.AddScoped(handlerInterface,   sp =>
             {
                 var pipelines = sp
                     .GetServices(pipelinesType)
-                    .Select(s => (IRequestHandler)s!);
+                    .Select(s => Unsafe.As<IRequestHandler>(s)!);
                 
-                if (pipelines.Any())
+                IRequestHandler lastPipeline = Unsafe.As<IRequestHandler>(sp.GetService(handler))!;
+                foreach (var pipeline in pipelines)
                 {
-                    IRequestHandler lastPipeline = Unsafe.As<IRequestHandler>(sp.GetService(handler))!;
-                    foreach (var pipeline in pipelines)
-                    {
-                        pipeline.SetNext(lastPipeline);
-                        lastPipeline = pipeline;
-                    }
-
-                    return lastPipeline;
+                    pipeline.SetNext(lastPipeline);
+                    lastPipeline = pipeline;
                 }
 
-                return sp.GetService(handler)!;
+                return lastPipeline;
             });
         }
     }

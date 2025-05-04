@@ -44,7 +44,7 @@ public class MediatRVsDispatchBenchmark
         {
             opts.ServiceLifetime = ServiceLifetime.Scoped;
         });
-        withoutPipelineServices.AddDispatchRHandlers(typeof(PingDispatchR).Assembly);
+        withoutPipelineServices.AddDispatchR(typeof(PingDispatchR).Assembly, withPipelines: false);
         var buildServicesWithoutPipeline = withoutPipelineServices.BuildServiceProvider();
         _dispatchRWithoutPipeline = buildServicesWithoutPipeline.CreateScope().ServiceProvider.GetRequiredService<DispatchR.IMediator>();
         _mediatRWithoutPipeline = buildServicesWithoutPipeline.CreateScope().ServiceProvider.GetRequiredService<MediatR.IMediator>();
