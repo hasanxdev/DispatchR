@@ -2,7 +2,7 @@
 
 namespace Sample;
 
-public class MyCommand : IRequest<MyCommand, int>
+public class MyCommand : IRequest<MyCommand, ValueTask<int>>
 {
     
 }

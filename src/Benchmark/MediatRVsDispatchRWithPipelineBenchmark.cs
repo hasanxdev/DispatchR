@@ -47,9 +47,10 @@ public class MediatRVsDispatchWithPipelineRBenchmark
         withPipelineServices.AddMediator((MediatorOptions options) =>
         {
             options.ServiceLifetime = ServiceLifetime.Scoped;
+            // options.PipelineBehaviors = [typeof(LoggingBehaviorMediatSG)];
         });
-        withPipelineServices.AddSingleton<Mediator.IPipelineBehavior<PingMediatSG, int>, LoggingBehaviorMediatSG>();
-        
+        withPipelineServices.AddScoped<Mediator.IPipelineBehavior<PingMediatSG, int>, LoggingBehaviorMediatSG>();
+
         withPipelineServices.AddDispatchR(typeof(PingDispatchR).Assembly);
         var buildServicesWithoutPipeline = withPipelineServices.BuildServiceProvider();
         _dispatchRWithPipeline = buildServicesWithoutPipeline.CreateScope().ServiceProvider.GetRequiredService<DispatchR.IMediator>();
@@ -112,7 +113,7 @@ public class MediatRVsDispatchWithPipelineRBenchmark
     }
     
     [Benchmark]
-    public Task<int> DispatchR_SendRequest_ExistCommand_ExistMediator_WithOut_Handler()
+    public ValueTask<int> DispatchR_SendRequest_ExistCommand_ExistMediator_WithOut_Handler()
     {
         try
         {
@@ -120,7 +121,7 @@ public class MediatRVsDispatchWithPipelineRBenchmark
         }
         catch
         {
-            return Task.FromResult(0);
+            return ValueTask.FromResult(0);
         }
     }
 
@@ -141,7 +142,7 @@ public class MediatRVsDispatchWithPipelineRBenchmark
     }
 
     [Benchmark]
-    public Task<int> DispatchR_SendRequest_ExistCommand_ExistMediator()
+    public ValueTask<int> DispatchR_SendRequest_ExistCommand_ExistMediator()
     {
         return _dispatchRWithPipeline.Send(StaticDispatchR, CancellationToken.None);
     }
@@ -151,120 +152,114 @@ public class MediatRVsDispatchWithPipelineRBenchmark
     #region SendRequest_ExistCommand_GetMediator
 
     [Benchmark]
-    public async Task<int> MediatR___SendRequest_ExistCommand_GetMediator()
+    public Task<int> MediatR___SendRequest_ExistCommand_GetMediator()
     {
-        var result = await _serviceScopeForMediatRWithPipeline
+        return _serviceScopeForMediatRWithPipeline
             .ServiceProvider
             .GetRequiredService<MediatR.IMediator>()
             .Send(StaticPingMediatR, CancellationToken.None);
-        
-        return result;
     }
     
     [Benchmark]
-    public async ValueTask<int> MediatSG___SendRequest_ExistCommand_GetMediator()
+    public ValueTask<int> MediatSG__SendRequest_ExistCommand_GetMediator()
     {
-        var result = await _serviceScopeForMediatSgWithPipeline
+        return _serviceScopeForMediatSgWithPipeline
             .ServiceProvider
             .GetRequiredService<Mediator.IMediator>()
             .Send(StaticPingMediatSg, CancellationToken.None);
-        
-        return result;
     }
 
     [Benchmark]
-    public async Task<int> DispatchR_SendRequest_ExistCommand_GetMediator()
+    public ValueTask<int> DispatchR_SendRequest_ExistCommand_GetMediator()
     {
-        var result = await _serviceScopeForDispatchRWithPipeline
+        return _serviceScopeForDispatchRWithPipeline
             .ServiceProvider
             .GetRequiredService<DispatchR.IMediator>()
             .Send(StaticDispatchR, CancellationToken.None);
-        
-        return result;
     }
 
     #endregion
     
-    #region SendRequest_ExistCommand_ExistMediator_Parallel
-
-    [Benchmark(OperationsPerInvoke = TotalSendRequests)]
-    public async Task<int> MediatR___SendRequest_ExistCommand_ExistMediator_Parallel()
-    {
-        var result = 0;
-        await Parallel.ForAsync(0, TotalSendRequests, async (index, ct) =>
-        {
-            result = await _mediatRWithPipeline.Send(StaticPingMediatR, CancellationToken.None);
-        });
-        
-        return result;
-    }
-    
-    [Benchmark(OperationsPerInvoke = TotalSendRequests)]
-    public async Task<int> MediatSG___SendRequest_ExistCommand_ExistMediator_Parallel()
-    {
-        var result = 0;
-        await Parallel.ForAsync(0, TotalSendRequests, async (index, ct) =>
-        {
-            result = await _mediatSgWithPipeline.Send(StaticPingMediatSg, CancellationToken.None);
-        });
-        
-        return result;
-    }
-
-    [Benchmark(OperationsPerInvoke = TotalSendRequests)]
-    public async Task<int> DispatchR_SendRequest_ExistCommand_ExistMediator_Parallel()
-    {
-        var result = 0;
-        await Parallel.ForAsync(0, TotalSendRequests, async (index, ct) =>
-        {
-            result = await _dispatchRWithPipeline.Send(StaticDispatchR, CancellationToken.None);
-        });
-        
-        return result;
-    }
-
-    #endregion
-    
-    #region SendRequest_ExistCommand_GetMediator_ExistScopes_Parallel
-
-    [Benchmark(OperationsPerInvoke = TotalSendRequests)]
-    public async Task<int> MediatR___SendRequest_ExistCommand_GetMediator_ExistScopes_Parallel()
-    {
-        var result = 0;
-        await Parallel.ForEachAsync(ScopesForMediatRWithPipeline, async (scope, ct) =>
-        {
-            result = await scope.ServiceProvider.GetRequiredService<MediatR.IMediator>()
-                .Send(StaticPingMediatR, CancellationToken.None);
-        });
-        
-        return result;
-    }
-    
-    [Benchmark(OperationsPerInvoke = TotalSendRequests)]
-    public async Task<int> MediatSG__SendRequest_ExistCommand_GetMediator_ExistScopes_Parallel()
-    {
-        var result = 0;
-        await Parallel.ForEachAsync(ScopesForMediatSgWithPipeline, async (scope, ct) =>
-        {
-            result = await scope.ServiceProvider.GetRequiredService<Mediator.IMediator>()
-                .Send(StaticPingMediatSg, CancellationToken.None);
-        });
-        
-        return result;
-    }
-
-    [Benchmark(OperationsPerInvoke = TotalSendRequests)]
-    public async Task<int> DispatchR_SendRequest_ExistCommand_GetMediator_ExistScopes_Parallel()
-    {
-        var result = 0;
-        await Parallel.ForEachAsync(ScopesForDispatchRWithPipeline, async (scope, ct) =>
-        {
-            result = await scope.ServiceProvider.GetRequiredService<DispatchR.IMediator>()
-                .Send(StaticDispatchR, CancellationToken.None);
-        });
-        
-        return result;
-    }
-
-    #endregion
+    // #region SendRequest_ExistCommand_ExistMediator_Parallel
+    //
+    // [Benchmark(OperationsPerInvoke = TotalSendRequests)]
+    // public async Task<int> MediatR___SendRequest_ExistCommand_ExistMediator_Parallel()
+    // {
+    //     var result = 0;
+    //     await Parallel.ForAsync(0, TotalSendRequests, async (index, ct) =>
+    //     {
+    //         result = await _mediatRWithPipeline.Send(StaticPingMediatR, CancellationToken.None);
+    //     });
+    //     
+    //     return result;
+    // }
+    //
+    // [Benchmark(OperationsPerInvoke = TotalSendRequests)]
+    // public async Task<int> MediatSG__SendRequest_ExistCommand_ExistMediator_Parallel()
+    // {
+    //     var result = 0;
+    //     await Parallel.ForAsync(0, TotalSendRequests, async (index, ct) =>
+    //     {
+    //         result = await _mediatSgWithPipeline.Send(StaticPingMediatSg, CancellationToken.None);
+    //     });
+    //     
+    //     return result;
+    // }
+    //
+    // [Benchmark(OperationsPerInvoke = TotalSendRequests)]
+    // public async Task<int> DispatchR_SendRequest_ExistCommand_ExistMediator_Parallel()
+    // {
+    //     var result = 0;
+    //     await Parallel.ForAsync(0, TotalSendRequests, async (index, ct) =>
+    //     {
+    //         result = await _dispatchRWithPipeline.Send(StaticDispatchR, CancellationToken.None);
+    //     });
+    //     
+    //     return result;
+    // }
+    //
+    // #endregion
+    //
+    // #region SendRequest_ExistCommand_GetMediator_ExistScopes_Parallel
+    //
+    // [Benchmark(OperationsPerInvoke = TotalSendRequests)]
+    // public async Task<int> MediatR___SendRequest_ExistCommand_GetMediator_ExistScopes_Parallel()
+    // {
+    //     var result = 0;
+    //     await Parallel.ForEachAsync(ScopesForMediatRWithPipeline, async (scope, ct) =>
+    //     {
+    //         result = await scope.ServiceProvider.GetRequiredService<MediatR.IMediator>()
+    //             .Send(StaticPingMediatR, CancellationToken.None);
+    //     });
+    //     
+    //     return result;
+    // }
+    //
+    // [Benchmark(OperationsPerInvoke = TotalSendRequests)]
+    // public async Task<int> MediatSG__SendRequest_ExistCommand_GetMediator_ExistScopes_Parallel()
+    // {
+    //     var result = 0;
+    //     await Parallel.ForEachAsync(ScopesForMediatSgWithPipeline, async (scope, ct) =>
+    //     {
+    //         result = await scope.ServiceProvider.GetRequiredService<Mediator.IMediator>()
+    //             .Send(StaticPingMediatSg, CancellationToken.None);
+    //     });
+    //     
+    //     return result;
+    // }
+    //
+    // [Benchmark(OperationsPerInvoke = TotalSendRequests)]
+    // public async Task<int> DispatchR_SendRequest_ExistCommand_GetMediator_ExistScopes_Parallel()
+    // {
+    //     var result = 0;
+    //     await Parallel.ForEachAsync(ScopesForDispatchRWithPipeline, async (scope, ct) =>
+    //     {
+    //         result = await scope.ServiceProvider.GetRequiredService<DispatchR.IMediator>()
+    //             .Send(StaticDispatchR, CancellationToken.None);
+    //     });
+    //     
+    //     return result;
+    // }
+    //
+    // #endregion
 }

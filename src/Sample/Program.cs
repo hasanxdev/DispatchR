@@ -20,7 +20,8 @@ builder.Services.AddDispatchR(typeof(MyCommand).Assembly);
 var app = builder.Build();
 var mediator = app.Services.CreateAsyncScope().ServiceProvider.GetRequiredService<IMediator>();
 var tt = await mediator.Send(new MyCommand(), CancellationToken.None);
-var tt2 = await mediator.Send(new MyCommand(), CancellationToken.None);
+var mediato2 = app.Services.CreateAsyncScope().ServiceProvider.GetRequiredService<IMediator>();
+var tt2 = await mediato2.Send(new MyCommand(), CancellationToken.None);
 var tt3 = await mediator.Send(new MyCommand(), CancellationToken.None);
 
 if (app.Environment.IsDevelopment())
