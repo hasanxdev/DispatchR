@@ -106,7 +106,7 @@ public class MediatRVsDispatchBenchmark
     }
 
     [Benchmark]
-    public Task<int> DispatchR_SendRequest_With_ExistCommand_ExistMediator_WithOut_Handler()
+    public ValueTask<int> DispatchR_SendRequest_With_ExistCommand_ExistMediator_WithOut_Handler()
     {
         try
         {
@@ -114,7 +114,7 @@ public class MediatRVsDispatchBenchmark
         }
         catch
         {
-            return Task.FromResult(0);
+            return ValueTask.FromResult(0);
         }
     }
 
@@ -135,7 +135,7 @@ public class MediatRVsDispatchBenchmark
     }
 
     [Benchmark]
-    public Task<int> DispatchR_SendRequest_With_ExistCommand_ExistMediator()
+    public ValueTask<int> DispatchR_SendRequest_With_ExistCommand_ExistMediator()
     {
         return _dispatchRWithoutPipeline.Send(StaticDispatchR, CancellationToken.None);
     }
@@ -167,14 +167,12 @@ public class MediatRVsDispatchBenchmark
     }
 
     [Benchmark]
-    public async Task<int> DispatchR_SendRequest_With_ExistCommand_GetMediator()
+    public ValueTask<int> DispatchR_SendRequest_With_ExistCommand_GetMediator()
     {
-        var result = await _serviceScopeForDispatchRWithoutPipeline
+        return _serviceScopeForDispatchRWithoutPipeline
             .ServiceProvider
             .GetRequiredService<DispatchR.IMediator>()
             .Send(StaticDispatchR, CancellationToken.None);
-        
-        return result;
     }
 
     #endregion

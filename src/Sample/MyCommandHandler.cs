@@ -2,11 +2,11 @@
 
 namespace Sample;
 
-public class TempRequestHandler : IRequestHandler<MyCommand, int>
+public class TempRequestHandler : IRequestHandler<MyCommand, ValueTask<int>>
 {
-    public Task<int> Handle(MyCommand request, CancellationToken cancellationToken)
+    public ValueTask<int> Handle(MyCommand request, CancellationToken cancellationToken)
     {
         Console.WriteLine("request handler");
-        return Task.FromResult(1);
+        return ValueTask.FromResult(1);
     }
 }

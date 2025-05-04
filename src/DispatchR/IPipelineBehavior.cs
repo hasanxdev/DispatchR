@@ -5,9 +5,8 @@ public interface IPipelineBehavior<TRequest, TResponse> : IRequestHandler<TReque
 {
     public IRequestHandler<TRequest, TResponse> NextPipeline { get; set; }
 
-    IRequestHandler<TRequest, TResponse> IRequestHandler<TRequest, TResponse>.SetNext(ref IRequestHandler<TRequest, TResponse> handler)
+    void IRequestHandler.SetNext(object handler)
     {
-        NextPipeline = handler;
-        return this;
+        NextPipeline = (IRequestHandler<TRequest, TResponse>)handler;
     }
 }
