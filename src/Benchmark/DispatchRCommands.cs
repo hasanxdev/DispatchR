@@ -1,4 +1,5 @@
 ﻿using DispatchR;
+using DispatchR.Requests;
 
 namespace Benchmark;
 

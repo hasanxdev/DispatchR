@@ -19,7 +19,7 @@ public class MediatRVsDispatchWithPipelineRBenchmark
     private IServiceScope _serviceScopeForMediatRWithPipeline;
     private IServiceScope _serviceScopeForMediatSgWithPipeline;
     private IServiceScope _serviceScopeForDispatchRWithPipeline;
-    private DispatchR.IMediator _dispatchRWithPipeline;
+    private DispatchR.Requests.IMediator _dispatchRWithPipeline;
     private IMediator _mediatRWithPipeline;
     private Mediator.IMediator _mediatSgWithPipeline;
     private static readonly PingDispatchR StaticDispatchR = new();
@@ -53,7 +53,7 @@ public class MediatRVsDispatchWithPipelineRBenchmark
 
         withPipelineServices.AddDispatchR(typeof(PingDispatchR).Assembly);
         var buildServicesWithoutPipeline = withPipelineServices.BuildServiceProvider();
-        _dispatchRWithPipeline = buildServicesWithoutPipeline.CreateScope().ServiceProvider.GetRequiredService<DispatchR.IMediator>();
+        _dispatchRWithPipeline = buildServicesWithoutPipeline.CreateScope().ServiceProvider.GetRequiredService<DispatchR.Requests.IMediator>();
         _mediatRWithPipeline = buildServicesWithoutPipeline.CreateScope().ServiceProvider.GetRequiredService<MediatR.IMediator>();
         _mediatSgWithPipeline = buildServicesWithoutPipeline.CreateScope().ServiceProvider.GetRequiredService<Mediator.IMediator>();
         _serviceScopeForMediatRWithPipeline = buildServicesWithoutPipeline.CreateScope();
@@ -174,7 +174,7 @@ public class MediatRVsDispatchWithPipelineRBenchmark
     {
         return _serviceScopeForDispatchRWithPipeline
             .ServiceProvider
-            .GetRequiredService<DispatchR.IMediator>()
+            .GetRequiredService<DispatchR.Requests.IMediator>()
             .Send(StaticDispatchR, CancellationToken.None);
     }
 
@@ -254,7 +254,7 @@ public class MediatRVsDispatchWithPipelineRBenchmark
         var result = 0;
         await Parallel.ForEachAsync(ScopesForDispatchRWithPipeline, async (scope, ct) =>
         {
-            result = await scope.ServiceProvider.GetRequiredService<DispatchR.IMediator>()
+            result = await scope.ServiceProvider.GetRequiredService<DispatchR.Requests.IMediator>()
                 .Send(StaticDispatchR, CancellationToken.None);
         });
         

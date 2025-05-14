@@ -1,4 +1,4 @@
-﻿namespace DispatchR;
+﻿namespace DispatchR.Requests;
 
 public interface IPipelineBehavior<TRequest, TResponse> : IRequestHandler<TRequest, TResponse> 
     where TRequest : class, IRequest<TRequest, TResponse>, new()

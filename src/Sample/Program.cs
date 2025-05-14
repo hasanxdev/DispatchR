@@ -1,28 +1,30 @@
 using System.Reflection;
 using DispatchR;
+using DispatchR.Requests;
 using Sample;
-    
+using DispatchRSample = Sample.DispatchR.SendRequest;
+using DispatchRStreamSample = Sample.DispatchR.StreamRequest;
+using MediatRSample = Sample.MediatR.SendRequest;
+using MediatRStreamSample = Sample.MediatR.StreamRequest;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
-builder.Services.AddDispatchR(typeof(MyCommand).Assembly, false);
 
-// builder.Services.AddMediatR(cfg =>
-// {
-//     cfg.Lifetime = ServiceLifetime.Scoped;
-//     cfg.RegisterServicesFromAssemblies(typeof(MyCommand).Assembly);
-// });
-// builder.Services.AddTransient<MediatR.IPipelineBehavior<MyCommand, int>, PipelineBehavior>();
-// builder.Services.AddTransient<MediatR.IPipelineBehavior<MyCommand, int>, Pipeline2>();
+builder.Services.AddMediatR(cfg =>
+{
+    cfg.Lifetime = ServiceLifetime.Scoped;
+    cfg.RegisterServicesFromAssemblies(typeof(MediatRSample.Ping).Assembly);
+});
+builder.Services.AddTransient<MediatR.IPipelineBehavior<MediatRSample.Ping, int>, MediatRSample.FirstPipelineBehavior>();
+builder.Services.AddTransient<MediatR.IPipelineBehavior<MediatRSample.Ping, int>, MediatRSample.SecondPipelineBehavior>();
+builder.Services.AddTransient<MediatR.IStreamPipelineBehavior<MediatRStreamSample.CounterStreamRequest, int>, MediatRStreamSample.CounterPipelineStreamHandler>();
+
+builder.Services.AddDispatchR(typeof(DispatchRSample.Ping).Assembly);
 
 var app = builder.Build();
-var mediator = app.Services.CreateAsyncScope().ServiceProvider.GetRequiredService<IMediator>();
-var tt = await mediator.Send(new MyCommand(), CancellationToken.None);
-var mediato2 = app.Services.CreateAsyncScope().ServiceProvider.GetRequiredService<IMediator>();
-var tt2 = await mediato2.Send(new MyCommand(), CancellationToken.None);
-var tt3 = await mediator.Send(new MyCommand(), CancellationToken.None);
 
 if (app.Environment.IsDevelopment())
 {
@@ -49,6 +51,50 @@ app.MapGet("/weatherforecast", () =>
         return forecast;
     })
     .WithName("GetWeatherForecast");
+
+app.MapGet("/Send/MediatR", (MediatR.IMediator mediatR, CancellationToken cancellationToken) 
+        => mediatR.Send(new MediatRSample.Ping(), cancellationToken))
+    .WithName("SendInMediatRWithPipeline");
+
+app.MapGet("/Send/DispatchR", (DispatchR.Requests.IMediator dispatchR, CancellationToken cancellationToken) 
+        => dispatchR.Send(new DispatchRSample.Ping(), cancellationToken))
+    .WithName("SendInDispatchRWithPipeline");
+
+app.MapGet("/Stream/MediatR", async (MediatR.IMediator mediatR, ILogger<Program> logger) =>
+{
+    CancellationTokenSource cts = new();
+    int count = 10;
+    await foreach (var item in mediatR.CreateStream(new MediatRStreamSample.CounterStreamRequest(), cts.Token))
+    {
+        count--;
+        if (count == 0)
+        {
+            cts.Cancel();
+        }
+
+        logger.LogInformation($"stream count in mediatR: {count}");
+    }
+    
+    return "It works";
+});
+
+app.MapGet("/Stream/DispatchR", async (DispatchR.Requests.IMediator dispatchR, ILogger<Program> logger) =>
+{
+    CancellationTokenSource cts = new();
+    int count = 10;
+    await foreach (var item in dispatchR.CreateStream(new DispatchRStreamSample.CounterStreamRequest(), cts.Token))
+    {
+        count--;
+        if (count == 0)
+        {
+            cts.Cancel();
+        }
+
+        logger.LogInformation($"stream count in dispatchR: {count}");
+    }
+    
+    return "It works";
+});
 
 app.Run();
 
