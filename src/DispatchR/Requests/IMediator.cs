@@ -1,4 +1,5 @@
 ﻿using System.Runtime.CompilerServices;
+using DispatchR.Requests.Send;
 using DispatchR.Requests.Stream;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -22,7 +23,8 @@ public sealed class Mediator(IServiceProvider serviceProvider) : IMediator
             .Handle(Unsafe.As<TRequest>(request), cancellationToken);
     }
 
-    public IAsyncEnumerable<TResponse> CreateStream<TRequest, TResponse>(IStreamRequest<TRequest, TResponse> request, CancellationToken cancellationToken) where TRequest : class, IStreamRequest, new()
+    public IAsyncEnumerable<TResponse> CreateStream<TRequest, TResponse>(IStreamRequest<TRequest, TResponse> request, 
+        CancellationToken cancellationToken) where TRequest : class, IStreamRequest, new()
     {
         return serviceProvider.GetRequiredService<IStreamRequestHandler<TRequest, TResponse>>()
             .Handle(Unsafe.As<TRequest>(request), cancellationToken);

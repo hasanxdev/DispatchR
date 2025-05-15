@@ -1,6 +1,6 @@
-﻿using System.Runtime.CompilerServices;
+﻿#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
+using System.Runtime.CompilerServices;
 using MediatR;
-
 namespace Benchmark.StreamRequest;
 
 public sealed class PingStreamMediatR : IStreamRequest<int> { }
@@ -12,7 +12,6 @@ public sealed class PingHandlerMediatR : IStreamRequestHandler<PingStreamMediatR
     {
         for (int i = 0; i < 3; i++)
         {
-            await Task.CompletedTask;
             yield return i;
         }
     }

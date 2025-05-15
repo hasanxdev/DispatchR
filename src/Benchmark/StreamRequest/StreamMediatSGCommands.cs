@@ -1,4 +1,5 @@
-﻿using System.Runtime.CompilerServices;
+﻿#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
+using System.Runtime.CompilerServices;
 using Mediator;
 
 namespace Benchmark.StreamRequest;
@@ -12,7 +13,6 @@ public sealed class PingHandlerMediatSg : IStreamRequestHandler<PingStreamMediat
     {
         for (int i = 0; i < 3; i++)
         {
-            await Task.CompletedTask;
             yield return i;
         }
     }
@@ -23,7 +23,7 @@ public sealed class LoggingBehaviorMediatSg : IStreamPipelineBehavior<PingStream
     // version 2.x
     public async IAsyncEnumerable<int> Handle(PingStreamMediatSg message, [EnumeratorCancellation] CancellationToken cancellationToken, StreamHandlerDelegate<PingStreamMediatSg, int> next)
     {
-        await foreach (var response in next(message, cancellationToken))
+        await foreach (var response in next(message, cancellationToken).ConfigureAwait(false))
         {
             yield return response;
         }

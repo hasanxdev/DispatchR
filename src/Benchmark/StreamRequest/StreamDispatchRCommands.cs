@@ -1,4 +1,5 @@
-﻿using System.Runtime.CompilerServices;
+﻿#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
+using System.Runtime.CompilerServices;
 using DispatchR.Requests;
 using DispatchR.Requests.Stream;
 
@@ -14,7 +15,6 @@ public sealed class PingHandlerDispatchR : IStreamRequestHandler<PingStreamDispa
     {
         for (int i = 0; i < 3; i++)
         {
-            await Task.CompletedTask;
             yield return i;
         }
     }
@@ -26,7 +26,7 @@ public sealed class LoggingBehaviorDispatchR : IStreamPipelineBehavior<PingStrea
 
     public async IAsyncEnumerable<int> Handle(PingStreamDispatchR request, [EnumeratorCancellation] CancellationToken cancellationToken)
     {
-        await foreach (var response in NextPipeline.Handle(request, cancellationToken))
+        await foreach (var response in NextPipeline.Handle(request, cancellationToken).ConfigureAwait(false))
         {
             yield return response;
         }

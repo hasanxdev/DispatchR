@@ -1,6 +1,7 @@
 ﻿using System.Reflection;
 using System.Runtime.CompilerServices;
 using DispatchR.Requests;
+using DispatchR.Requests.Send;
 using DispatchR.Requests.Stream;
 using Microsoft.Extensions.DependencyInjection;
 using ZLinq;

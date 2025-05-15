@@ -1,4 +1,6 @@
-﻿namespace DispatchR.Requests.Stream;
+﻿using System.Runtime.CompilerServices;
+
+namespace DispatchR.Requests.Stream;
 
 public interface IStreamPipelineBehavior<TRequest, TResponse> : IStreamRequestHandler<TRequest, TResponse> 
     where TRequest : class, IStreamRequest<TRequest, TResponse>, new()
@@ -7,6 +9,6 @@ public interface IStreamPipelineBehavior<TRequest, TResponse> : IStreamRequestHa
 
     void IStreamRequestHandler.SetNext(object handler)
     {
-        NextPipeline = (IStreamRequestHandler<TRequest, TResponse>)handler;
+        NextPipeline = Unsafe.As<IStreamRequestHandler<TRequest, TResponse>>(handler);
     }
 }
