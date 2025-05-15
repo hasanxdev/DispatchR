@@ -10,10 +10,7 @@ public sealed class PingHandlerMediatR : IStreamRequestHandler<PingStreamMediatR
 {
     public async IAsyncEnumerable<int> Handle(PingStreamMediatR request, [EnumeratorCancellation] CancellationToken cancellationToken)
     {
-        for (int i = 0; i < 3; i++)
-        {
-            yield return i;
-        }
+        yield return 0;
     }
 }
 

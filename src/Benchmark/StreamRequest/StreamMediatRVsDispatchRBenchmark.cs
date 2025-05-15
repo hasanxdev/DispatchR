@@ -9,7 +9,7 @@ namespace Benchmark.StreamRequest;
 [Orderer(SummaryOrderPolicy.FastestToSlowest)]
 public class StreamMediatRVsDispatchBenchmark
 {
-    private const int TotalSendRequests = 5_000;
+    private const int TotalStreamRequests = 5_000;
     private IServiceScope _serviceScopeForMediatRWithoutPipeline;
     private IServiceScope _serviceScopeForMediatSgWithoutPipeline;
     private IServiceScope _serviceScopeForDispatchRWithoutPipeline;
@@ -22,9 +22,9 @@ public class StreamMediatRVsDispatchBenchmark
     private static readonly PingStreamDispatchRWithOutHandler StaticStreamDispatchRRequestWithOutHandler = new();
     private static readonly PingStreamMediatRWithOutHandler StaticPingStreamMediatRWithOutHandler = new();
     private static readonly PingStreamMediatSgWithOutHandler StaticPingStreamMediatSgWithOutHandler = new();
-    private static List<IServiceScope> ScopesForMediatRWithoutPipeline { get; set; } = new(TotalSendRequests);
-    private static List<IServiceScope> ScopesForMediatSgWithoutPipeline { get; set; } = new(TotalSendRequests);
-    private static List<IServiceScope> ScopesForDispatchRWithoutPipeline { get; set; } = new(TotalSendRequests);
+    private static List<IServiceScope> ScopesForMediatRWithoutPipeline { get; set; } = new(TotalStreamRequests);
+    private static List<IServiceScope> ScopesForMediatSgWithoutPipeline { get; set; } = new(TotalStreamRequests);
+    private static List<IServiceScope> ScopesForDispatchRWithoutPipeline { get; set; } = new(TotalStreamRequests);
 
     [GlobalSetup]
     public void Setup()
@@ -50,7 +50,7 @@ public class StreamMediatRVsDispatchBenchmark
         ScopesForMediatRWithoutPipeline.Clear();
         ScopesForMediatSgWithoutPipeline.Clear();
         ScopesForDispatchRWithoutPipeline.Clear();
-        Parallel.For(0, TotalSendRequests, i =>
+        Parallel.For(0, TotalStreamRequests, i =>
         {
             ScopesForMediatRWithoutPipeline.Add(buildServicesWithoutPipeline.CreateScope());
             ScopesForDispatchRWithoutPipeline.Add(buildServicesWithoutPipeline.CreateScope());
@@ -72,10 +72,10 @@ public class StreamMediatRVsDispatchBenchmark
         Parallel.ForEach(ScopesForDispatchRWithoutPipeline, scope => scope.Dispose());
     }
     
-    #region SendRequest_With_ExistCommand_ExistMediator_WithOutHandler
+    #region StreamRequest_With_ExistRequest_ExistMediator_WithOutHandler
 
     [Benchmark(Baseline = true)]
-    public async Task<int> MediatR___SendRequest_With_ExistCommand_ExistMediator_WithOut_Handler()
+    public async Task<int> MediatR___StreamRequest_With_ExistRequest_ExistMediator_WithOut_Handler()
     {
         try
         {
@@ -94,7 +94,7 @@ public class StreamMediatRVsDispatchBenchmark
     }
     
     [Benchmark]
-    public async Task<int> MediatSG__SendRequest_With_ExistCommand_ExistMediator_WithOut_Handler()
+    public async Task<int> MediatSG__StreamRequest_With_ExistRequest_ExistMediator_WithOut_Handler()
     {
         try
         {
@@ -113,7 +113,7 @@ public class StreamMediatRVsDispatchBenchmark
     }
 
     [Benchmark]
-    public async Task<int> DispatchR_SendRequest_With_ExistCommand_ExistMediator_WithOut_Handler()
+    public async Task<int> DispatchR_StreamRequest_With_ExistRequest_ExistMediator_WithOut_Handler()
     {
         try
         {
@@ -133,10 +133,10 @@ public class StreamMediatRVsDispatchBenchmark
 
     #endregion
 
-    #region SendRequest_With_ExistCommand_ExistMediator
+    #region StreamRequest_With_ExistRequest_ExistMediator
 
     [Benchmark]
-    public async Task<int> MediatR___SendRequest_With_ExistCommand_ExistMediator()
+    public async Task<int> MediatR___StreamRequest_With_ExistRequest_ExistMediator()
     {
         var last = 0;
         await foreach (var response in _mediatRWithoutPipeline.CreateStream(StaticPingStreamMediatR, CancellationToken.None))
@@ -147,7 +147,7 @@ public class StreamMediatRVsDispatchBenchmark
     }
     
     [Benchmark]
-    public async Task<int> MediatSG__SendRequest_With_ExistCommand_ExistMediator()
+    public async Task<int> MediatSG__StreamRequest_With_ExistRequest_ExistMediator()
     {
         var last = 0;
         await foreach (var response in _mediatSgWithoutPipeline.CreateStream(StaticPingStreamMediatSg, CancellationToken.None))
@@ -158,7 +158,7 @@ public class StreamMediatRVsDispatchBenchmark
     }
 
     [Benchmark]
-    public async Task<int> DispatchR_SendRequest_With_ExistCommand_ExistMediator()
+    public async Task<int> DispatchR_StreamRequest_With_ExistRequest_ExistMediator()
     {
         var last = 0;
         await foreach (var response in _dispatchRWithoutPipeline.CreateStream(StaticStreamDispatchR, CancellationToken.None))
@@ -170,10 +170,10 @@ public class StreamMediatRVsDispatchBenchmark
 
     #endregion
     
-    #region SendRequest_With_ExistCommand_GetMediator
+    #region StreamRequest_With_ExistRequest_GetMediator
 
     [Benchmark]
-    public async Task<int> MediatR___SendRequest_With_ExistCommand_GetMediator()
+    public async Task<int> MediatR___StreamRequest_With_ExistRequest_GetMediator()
     {
         var mediator = _serviceScopeForMediatRWithoutPipeline
             .ServiceProvider
@@ -188,7 +188,7 @@ public class StreamMediatRVsDispatchBenchmark
     }
     
     [Benchmark]
-    public async Task<int> MediatSG__SendRequest_With_ExistCommand_GetMediator()
+    public async Task<int> MediatSG__StreamRequest_With_ExistRequest_GetMediator()
     {
         var mediator = _serviceScopeForMediatSgWithoutPipeline
             .ServiceProvider
@@ -203,7 +203,7 @@ public class StreamMediatRVsDispatchBenchmark
     }
 
     [Benchmark]
-    public async Task<int> DispatchR_SendRequest_With_ExistCommand_GetMediator()
+    public async Task<int> DispatchR_StreamRequest_With_ExistRequest_GetMediator()
     {
         var mediator = _serviceScopeForDispatchRWithoutPipeline
             .ServiceProvider
@@ -219,13 +219,13 @@ public class StreamMediatRVsDispatchBenchmark
 
     #endregion
     
-    #region SendRequest_With_ExistCommand_ExistMediator_Parallel
+    #region StreamRequest_With_ExistRequest_ExistMediator_Parallel
 
-    [Benchmark(OperationsPerInvoke = TotalSendRequests)]
-    public async Task<int> MediatR___SendRequest_With_ExistCommand_ExistMediator_Parallel()
+    [Benchmark(OperationsPerInvoke = TotalStreamRequests)]
+    public async Task<int> MediatR___StreamRequest_With_ExistRequest_ExistMediator_Parallel()
     {
         var result = 0;
-        await Parallel.ForAsync(0, TotalSendRequests, async (index, ct) =>
+        await Parallel.ForAsync(0, TotalStreamRequests, async (index, ct) =>
         {
             await foreach (var response in _mediatRWithoutPipeline.CreateStream(StaticPingStreamMediatR, CancellationToken.None))
             {
@@ -236,11 +236,11 @@ public class StreamMediatRVsDispatchBenchmark
         return result;
     }
     
-    [Benchmark(OperationsPerInvoke = TotalSendRequests)]
-    public async Task<int> MediatSG__SendRequest_With_ExistCommand_ExistMediator_Parallel()
+    [Benchmark(OperationsPerInvoke = TotalStreamRequests)]
+    public async Task<int> MediatSG__StreamRequest_With_ExistRequest_ExistMediator_Parallel()
     {
         var result = 0;
-        await Parallel.ForAsync(0, TotalSendRequests, async (index, ct) =>
+        await Parallel.ForAsync(0, TotalStreamRequests, async (index, ct) =>
         {
             await foreach (var response in _mediatSgWithoutPipeline.CreateStream(StaticPingStreamMediatSg, CancellationToken.None))
             {
@@ -251,11 +251,11 @@ public class StreamMediatRVsDispatchBenchmark
         return result;
     }
 
-    [Benchmark(OperationsPerInvoke = TotalSendRequests)]
-    public async Task<int> DispatchR_SendRequest_With_ExistCommand_ExistMediator_Parallel()
+    [Benchmark(OperationsPerInvoke = TotalStreamRequests)]
+    public async Task<int> DispatchR_StreamRequest_With_ExistRequest_ExistMediator_Parallel()
     {
         var result = 0;
-        await Parallel.ForAsync(0, TotalSendRequests, async (index, ct) =>
+        await Parallel.ForAsync(0, TotalStreamRequests, async (index, ct) =>
         {
             await foreach (var response in _dispatchRWithoutPipeline.CreateStream(StaticStreamDispatchR, CancellationToken.None))
             {
@@ -268,10 +268,10 @@ public class StreamMediatRVsDispatchBenchmark
 
     #endregion
     
-    #region SendRequest_With_ExistCommand_GetMediator_ExistScopes_Parallel
+    #region StreamRequest_With_ExistRequest_GetMediator_ExistScopes_Parallel
 
-    [Benchmark(OperationsPerInvoke = TotalSendRequests)]
-    public async Task<int> MediatR___SendRequest_With_ExistCommand_GetMediator_ExistScopes_Parallel()
+    [Benchmark(OperationsPerInvoke = TotalStreamRequests)]
+    public async Task<int> MediatR___StreamRequest_With_ExistRequest_GetMediator_ExistScopes_Parallel()
     {
         var result = 0;
         await Parallel.ForEachAsync(ScopesForMediatRWithoutPipeline, async (scope, ct) =>
@@ -286,8 +286,8 @@ public class StreamMediatRVsDispatchBenchmark
         return result;
     }
     
-    [Benchmark(OperationsPerInvoke = TotalSendRequests)]
-    public async Task<int> MediatSG__SendRequest_With_ExistCommand_GetMediator_ExistScopes_Parallel()
+    [Benchmark(OperationsPerInvoke = TotalStreamRequests)]
+    public async Task<int> MediatSG__StreamRequest_With_ExistRequest_GetMediator_ExistScopes_Parallel()
     {
         var result = 0;
         await Parallel.ForEachAsync(ScopesForMediatSgWithoutPipeline, async (scope, ct) =>
@@ -302,8 +302,8 @@ public class StreamMediatRVsDispatchBenchmark
         return result;
     }
 
-    [Benchmark(OperationsPerInvoke = TotalSendRequests)]
-    public async Task<int> DispatchR_SendRequest_With_ExistCommand_GetMediator_ExistScopes_Parallel()
+    [Benchmark(OperationsPerInvoke = TotalStreamRequests)]
+    public async Task<int> DispatchR_StreamRequest_With_ExistRequest_GetMediator_ExistScopes_Parallel()
     {
         var result = 0;
         await Parallel.ForEachAsync(ScopesForDispatchRWithoutPipeline, async (scope, ct) =>

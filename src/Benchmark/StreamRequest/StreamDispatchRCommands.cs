@@ -13,10 +13,7 @@ public sealed class PingHandlerDispatchR : IStreamRequestHandler<PingStreamDispa
 {
     public async IAsyncEnumerable<int> Handle(PingStreamDispatchR request, [EnumeratorCancellation] CancellationToken cancellationToken)
     {
-        for (int i = 0; i < 3; i++)
-        {
-            yield return i;
-        }
+        yield return 0;
     }
 }
 

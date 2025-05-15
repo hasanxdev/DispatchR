@@ -9,8 +9,10 @@ using BenchmarkDotNet.Reports;
 using BenchmarkDotNet.Running;
 
 BenchmarkSwitcher.FromTypes([
+    typeof(MediatRVsDispatchBenchmark),
+    typeof(MediatRVsDispatchWithPipelineRBenchmark),
     typeof(StreamMediatRVsDispatchBenchmark),
-    typeof(StreamMediatRVsDispatchWithPipelineRBenchmark)
+    typeof(StreamMediatRVsDispatchWithPipelineRBenchmark),
 ]).Run(args, ManualConfig.Create(DefaultConfig.Instance)
     .AddColumn(new OperationsColumn())
 );

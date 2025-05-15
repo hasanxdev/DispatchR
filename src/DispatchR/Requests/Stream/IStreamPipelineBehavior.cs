@@ -1,4 +1,5 @@
 ﻿using System.Runtime.CompilerServices;
+using DispatchR.Requests.Send;
 
 namespace DispatchR.Requests.Stream;
 
@@ -7,7 +8,7 @@ public interface IStreamPipelineBehavior<TRequest, TResponse> : IStreamRequestHa
 {
     public IStreamRequestHandler<TRequest, TResponse> NextPipeline { get; set; }
 
-    void IStreamRequestHandler.SetNext(object handler)
+    void IRequestHandler.SetNext(object handler)
     {
         NextPipeline = Unsafe.As<IStreamRequestHandler<TRequest, TResponse>>(handler);
     }
