@@ -1,6 +1,6 @@
 ﻿using Mediator;
 
-namespace Benchmark;
+namespace Benchmark.SendRequest;
 
 public sealed class PingMediatSG : IRequest<int> { }
 public sealed class PingMediatSGWithOutHandler : IRequest<int> { }

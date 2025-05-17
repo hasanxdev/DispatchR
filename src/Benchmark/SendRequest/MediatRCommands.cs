@@ -1,6 +1,6 @@
 ﻿using MediatR;
 
-namespace Benchmark;
+namespace Benchmark.SendRequest;
 
 public sealed class PingMediatR : IRequest<int> { }
 public sealed class PingMediatRWithOutHandler : IRequest<int> { }

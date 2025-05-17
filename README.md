@@ -101,6 +101,78 @@ public sealed class LoggingBehaviorDispatchR : IPipelineBehavior<PingDispatchR, 
 
 Ideal for high-performance .NET applications.
 
+## Stream Request Definition
+
+### MediatR Stream
+```csharp
+public sealed class CounterStreamRequestMediatR : IStreamRequest<int> { }
+```
+
+### DispatchR
+1. Sending `TRequest` to `IStreamRequest`
+
+```csharp
+public sealed class CounterStreamRequestDispatchR : IStreamRequest<PingDispatchR, ValueTask<int>> { } 
+```
+
+## Stream Handler Definition
+
+### Stream Handler MediatR
+```csharp
+public sealed class CounterStreamHandlerMediatR : IStreamRequestHandler<CounterStreamRequestMediatR, int>
+{
+    public async IAsyncEnumerable<int> Handle(CounterStreamRequestMediatR request, CancellationToken cancellationToken)
+    {
+        yield return 1;
+    }
+}
+```
+
+### Stream Handler DispatchR (Don't change)
+
+```csharp
+public sealed class CounterStreamHandlerDispatchR : IStreamRequestHandler<CounterStreamHandlerDispatchR, int>
+{
+    public async IAsyncEnumerable<int> Handle(CounterStreamHandlerDispatchR request, CancellationToken cancellationToken)
+    {
+        yield return 1;
+    }
+}
+```
+
+## Stream Pipeline Behavior
+
+### Stream Pipeline MediatR
+```csharp
+public sealed class CounterPipelineStreamHandler : IStreamPipelineBehavior<CounterStreamRequestMediatR, string>
+{
+    public async IAsyncEnumerable<string> Handle(CounterStreamRequestMediatR request, StreamHandlerDelegate<string> next, [EnumeratorCancellation] CancellationToken cancellationToken)
+    {
+        await foreach (var response in next().WithCancellation(cancellationToken).ConfigureAwait(false))
+        {
+            yield return response;
+        }
+    }
+}
+```
+
+### Stream Pipeline DispatchR
+1. Use ___Chain of Responsibility___ pattern
+
+```csharp
+public sealed class CounterPipelineStreamHandler : IStreamPipelineBehavior<CounterStreamRequestDispatchR, string>
+{
+    public required IStreamRequestHandler<CounterStreamRequestDispatchR, string> NextPipeline { get; set; }
+    
+    public async IAsyncEnumerable<string> Handle(CounterStreamRequestDispatchR request, [EnumeratorCancellation] CancellationToken cancellationToken)
+    {
+        await foreach (var response in NextPipeline.Handle(request, cancellationToken).ConfigureAwait(false))
+        {
+            yield return response;
+        }
+    }
+}
+```
 
 # ⚡ How DispatchR Achieves High Performance
 
@@ -118,46 +190,57 @@ public TResponse Send<TRequest, TResponse>(IRequest<TRequest, TResponse> request
 }
 ```
 
+## What Happens Inside the `CreateStream` Method?
+
+```csharp
+public IAsyncEnumerable<TResponse> CreateStream<TRequest, TResponse>(IStreamRequest<TRequest, TResponse> request, 
+        CancellationToken cancellationToken) where TRequest : class, IStreamRequest, new()
+ {
+     return serviceProvider.GetRequiredService<IStreamRequestHandler<TRequest, TResponse>>()
+         .Handle(Unsafe.As<TRequest>(request), cancellationToken);
+ }
+```
+
 **Only the handler is resolved and directly invoked!**
 
 But the real magic happens behind the scenes when DI resolves the handler dependency:
-> 💡 __Tips:__ *We cache the handler using DI, so in scoped scenarios, the object is constructed only once and reused afterward.*
+> 💡 __Tips:__ 
+> 1. *We cache the handler using DI, so in scoped scenarios, the object is constructed only once and reused afterward.*
+> 
+> 2. *In terms of Dependency Injection (DI), everything is an IRequestHandler, it's just the keys that differ.
+     When you request a specific key, a set of 1+N objects is returned: the first one is the actual handler, and the rest are the pipeline behaviors.*
 ```csharp
 services.AddScoped(handlerInterface, sp =>
 {
-    var pipelines = sp
-        .GetServices(pipelinesType)
-        .Select(s => Unsafe.As<IRequestHandler>(s)!);
-
-    IRequestHandler lastPipeline = Unsafe.As<IRequestHandler>(sp.GetService(handler))!;
-    foreach (var pipeline in pipelines)
+    using var pipelinesWithHandler = sp
+        .GetKeyedServices<IRequestHandler>(key)
+        .GetEnumerator();
+    
+    IRequestHandler? lastPipeline = null;
+    while (pipelinesWithHandler.MoveNext())
     {
-        pipeline.SetNext(lastPipeline);
+        var pipeline = pipelinesWithHandler.Current;
+        pipeline.SetNext(lastPipeline!);
         lastPipeline = pipeline;
     }
 
-    return lastPipeline;
+    return lastPipeline!;
 });
 ```
 
 This elegant design chains pipeline behaviors at resolution time — no static lists, no reflection, no magic.
 
-
-## 🧠 Smarter LINQ: Zero Allocation
-
-##### To further reduce memory allocations, DispatchR uses **zLinq**, a zero-allocation LINQ implementation, instead of the default LINQ. This means even in heavy pipelines and high-frequency requests, memory remains under control.
-> Of course, our goal is to stay dependency-free — but for now, I think it's totally fine to rely on this as a starting point!
-
 ## 🪴 How to use?
 It's simple! Just use the following code:
 ```csharp
-builder.Services.AddDispatchR(typeof(MyCommand).Assembly);
+builder.Services.AddDispatchR(typeof(MyCommand).Assembly, withPipelines: true);
 ```
 This code will automatically register all pipelines by default. If you need to register them in a specific order, you can either add them manually or write your own reflection logic:
 ```csharp
 builder.Services.AddDispatchR(typeof(MyCommand).Assembly, withPipelines: false);
 builder.Services.AddScoped<IPipelineBehavior<MyCommand, int>, PipelineBehavior>();
 builder.Services.AddScoped<IPipelineBehavior<MyCommand, int>, ValidationBehavior>();
+builder.Services.AddScoped<IStreamPipelineBehavior<MyStreamCommand, int>, ValidationBehavior>();
 ```
 ### 💡 Key Notes:
 1. Automatic pipeline registration is enabled by default
@@ -166,7 +249,7 @@ builder.Services.AddScoped<IPipelineBehavior<MyCommand, int>, ValidationBehavior
 
 ## ✨ How to install?
 ```
-dotnet add package DispatchR.Mediator --version 1.0.0
+dotnet add package DispatchR.Mediator --version 1.1.0
 ```
 
 # 🧪 Bechmark Result:
@@ -174,15 +257,22 @@ dotnet add package DispatchR.Mediator --version 1.0.0
 > This benchmark was conducted using MediatR version 12.5.0 and the stable release of Mediator Source Generator, version 2.1.7.
 Version 3 of Mediator Source Generator was excluded due to significantly lower performance.
 
+### Send Request
 #### 1. MediatR vs Mediator Source Generator vs DispatchR With Pipeline
 ![Benchmark Result](./benchmark/results/with-pipeline-stable.png)
 #### 2. MediatR vs Mediator Source Generator vs DispatchR Without Pipeline
 ![Benchmark Result](./benchmark/results/without-pipeline-stable.png)
 
+### Stream Request
+#### 1. MediatR vs Mediator Source Generator vs DispatchR With Pipeline
+![Benchmark Result](./benchmark/results/stream-with-pipeline-stable.png)
+#### 2. MediatR vs Mediator Source Generator vs DispatchR Without Pipeline
+![Benchmark Result](./benchmark/results/stream-without-pipeline-stable.png)
+
 ## ✨ Contribute & Help Grow This Package! ✨
 We welcome contributions to make this package even better! ❤️
- - Found a bug? 🐛 → Open an issue
- - Have an idea? 💡 → Suggest a feature
- - Want to code? 👩💻 → Submit a PR
+ - Found a bug? → Open an issue
+ - Have an idea? → Suggest a feature
+ - Want to code? → Submit a PR
 
 Let's build something amazing together! 🚀
