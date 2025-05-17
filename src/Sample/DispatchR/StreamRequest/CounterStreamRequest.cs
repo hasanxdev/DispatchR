@@ -2,4 +2,4 @@
 
 namespace Sample.DispatchR.StreamRequest;
 
-public class CounterStreamRequest : IStreamRequest<CounterStreamRequest, int> { }
+public class CounterStreamRequest : IStreamRequest<CounterStreamRequest, string> { }

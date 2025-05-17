@@ -61,11 +61,11 @@ public static class DispatchRServiceCollection
                 behaviorType = streamPipelineBehaviorType;
             }
 
-            var handlerInterface = handler.GetInterfaces()
-                .First(p => p.IsGenericType && p.GetGenericTypeDefinition() == handlerType);
-
             services.AddKeyedScoped(typeof(IRequestHandler), key, handler);
 
+            var handlerInterface = handler.GetInterfaces()
+                .First(p => p.IsGenericType && p.GetGenericTypeDefinition() == handlerType);
+            
             // find pipelines
             if (withPipelines)
             {

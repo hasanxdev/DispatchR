@@ -1,15 +1,16 @@
 ﻿
+using System.Runtime.CompilerServices;
 using DispatchR.Requests.Stream;
 
 namespace Sample.DispatchR.StreamRequest;
 
-public class CounterPipelineStreamHandler : IStreamPipelineBehavior<CounterStreamRequest, int>
+public class CounterPipelineStreamHandler : IStreamPipelineBehavior<CounterStreamRequest, string>
 {
-    public IStreamRequestHandler<CounterStreamRequest, int> NextPipeline { get; set; }
+    public required IStreamRequestHandler<CounterStreamRequest, string> NextPipeline { get; set; }
     
-    public async IAsyncEnumerable<int> Handle(CounterStreamRequest request, CancellationToken cancellationToken)
+    public async IAsyncEnumerable<string> Handle(CounterStreamRequest request, [EnumeratorCancellation] CancellationToken cancellationToken)
     {
-        await foreach (var response in NextPipeline.Handle(request, cancellationToken))
+        await foreach (var response in NextPipeline.Handle(request, cancellationToken).ConfigureAwait(false))
         {
             yield return response;
         }

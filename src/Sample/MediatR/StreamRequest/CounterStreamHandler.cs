@@ -3,16 +3,18 @@ using MediatR;
 
 namespace Sample.MediatR.StreamRequest;
 
-public class CounterStreamHandler : IStreamRequestHandler<CounterStreamRequest, int>
+public class CounterStreamHandler(IWebHostEnvironment webHostEnvironment) : IStreamRequestHandler<CounterStreamRequest, string>
 {
-    public async IAsyncEnumerable<int> Handle(CounterStreamRequest request, [EnumeratorCancellation] CancellationToken cancellationToken)
+    public async IAsyncEnumerable<string> Handle(CounterStreamRequest request, [EnumeratorCancellation] CancellationToken cancellationToken)
     {
-        int count = 0;
-        while (!cancellationToken.IsCancellationRequested)
+        await using var allLines = File
+            .ReadLinesAsync(webHostEnvironment.ContentRootPath + "/BigFile.txt", cancellationToken)
+            .GetAsyncEnumerator(cancellationToken);
+        
+        while (cancellationToken.IsCancellationRequested is false)
         {
-            await Task.CompletedTask;
-            yield return count;
-            count++;
+            await allLines.MoveNextAsync();
+            yield return allLines.Current;
         }
     }
 }

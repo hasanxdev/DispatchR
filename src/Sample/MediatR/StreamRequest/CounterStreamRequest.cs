@@ -2,4 +2,4 @@
 
 namespace Sample.MediatR.StreamRequest;
 
-public class CounterStreamRequest : IStreamRequest<int> { }
+public class CounterStreamRequest : IStreamRequest<string> { }

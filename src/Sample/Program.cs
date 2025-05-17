@@ -20,7 +20,7 @@ builder.Services.AddMediatR(cfg =>
 });
 builder.Services.AddTransient<MediatR.IPipelineBehavior<MediatRSample.Ping, int>, MediatRSample.FirstPipelineBehavior>();
 builder.Services.AddTransient<MediatR.IPipelineBehavior<MediatRSample.Ping, int>, MediatRSample.SecondPipelineBehavior>();
-builder.Services.AddTransient<MediatR.IStreamPipelineBehavior<MediatRStreamSample.CounterStreamRequest, int>, MediatRStreamSample.CounterPipelineStreamHandler>();
+builder.Services.AddTransient<MediatR.IStreamPipelineBehavior<MediatRStreamSample.CounterStreamRequest, string>, MediatRStreamSample.CounterPipelineStreamHandler>();
 
 builder.Services.AddDispatchR(typeof(DispatchRSample.Ping).Assembly);
 
@@ -63,16 +63,16 @@ app.MapGet("/Send/DispatchR", (DispatchR.Requests.IMediator dispatchR, Cancellat
 app.MapGet("/Stream/MediatR", async (MediatR.IMediator mediatR, ILogger<Program> logger) =>
 {
     CancellationTokenSource cts = new();
-    int count = 10;
+    int count = 0;
     await foreach (var item in mediatR.CreateStream(new MediatRStreamSample.CounterStreamRequest(), cts.Token))
     {
-        count--;
-        if (count == 0)
+        count++;
+        if (item.Contains("CodeWithHSN"))
         {
             cts.Cancel();
         }
 
-        logger.LogInformation($"stream count in mediatR: {count}");
+        logger.LogInformation($"stream count in MediatR: {count}");
     }
     
     return "It works";
@@ -81,16 +81,16 @@ app.MapGet("/Stream/MediatR", async (MediatR.IMediator mediatR, ILogger<Program>
 app.MapGet("/Stream/DispatchR", async (DispatchR.Requests.IMediator dispatchR, ILogger<Program> logger) =>
 {
     CancellationTokenSource cts = new();
-    int count = 10;
+    int count = 0;
     await foreach (var item in dispatchR.CreateStream(new DispatchRStreamSample.CounterStreamRequest(), cts.Token))
     {
-        count--;
-        if (count == 0)
+        count++;
+        if (item.Contains("CodeWithHSN"))
         {
             cts.Cancel();
         }
 
-        logger.LogInformation($"stream count in dispatchR: {count}");
+        logger.LogInformation($"stream count in DispatchR: {count}");
     }
     
     return "It works";

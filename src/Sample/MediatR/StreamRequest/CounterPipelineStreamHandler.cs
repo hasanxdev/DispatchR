@@ -1,10 +1,11 @@
-﻿using MediatR;
+﻿using System.Runtime.CompilerServices;
+using MediatR;
 
 namespace Sample.MediatR.StreamRequest;
 
-public class CounterPipelineStreamHandler : IStreamPipelineBehavior<CounterStreamRequest, int>
+public class CounterPipelineStreamHandler : IStreamPipelineBehavior<CounterStreamRequest, string>
 {
-    public async IAsyncEnumerable<int> Handle(CounterStreamRequest request, StreamHandlerDelegate<int> next, CancellationToken cancellationToken)
+    public async IAsyncEnumerable<string> Handle(CounterStreamRequest request, StreamHandlerDelegate<string> next, [EnumeratorCancellation] CancellationToken cancellationToken)
     {
         await foreach (var response in next().WithCancellation(cancellationToken).ConfigureAwait(false))
         {

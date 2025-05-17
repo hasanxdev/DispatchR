@@ -87,7 +87,7 @@ public class StreamMediatRVsDispatchWithPipelineRBenchmark
         try
         {
             var result = 0;
-            await foreach (var response in _mediatRWithPipeline.CreateStream(StaticPingStreamMediatRWithOutHandler, CancellationToken.None))
+            await foreach (var response in _mediatRWithPipeline.CreateStream(StaticPingStreamMediatRWithOutHandler, CancellationToken.None).ConfigureAwait(false))
             {
                 result = response;
             }
@@ -106,7 +106,7 @@ public class StreamMediatRVsDispatchWithPipelineRBenchmark
         try
         {
             var result = 0;
-            await foreach (var response in _mediatSgWithPipeline.CreateStream(StaticPingStreamMediatSgWithOutHandler, CancellationToken.None))
+            await foreach (var response in _mediatSgWithPipeline.CreateStream(StaticPingStreamMediatSgWithOutHandler, CancellationToken.None).ConfigureAwait(false))
             {
                 result = response;
             }
@@ -125,7 +125,7 @@ public class StreamMediatRVsDispatchWithPipelineRBenchmark
         try
         {
             var result = 0;
-            await foreach (var response in _dispatchRWithPipeline.CreateStream(StaticStreamDispatchRRequestWithOutHandler, CancellationToken.None))
+            await foreach (var response in _dispatchRWithPipeline.CreateStream(StaticStreamDispatchRRequestWithOutHandler, CancellationToken.None).ConfigureAwait(false))
             {
                 result = response;
             }
@@ -146,7 +146,7 @@ public class StreamMediatRVsDispatchWithPipelineRBenchmark
     public async Task<int> MediatR___StreamRequest_ExistRequest_ExistMediator()
     {
         var result = 0;
-        await foreach (var response in _mediatRWithPipeline.CreateStream(StaticPingStreamMediatR, CancellationToken.None))
+        await foreach (var response in _mediatRWithPipeline.CreateStream(StaticPingStreamMediatR, CancellationToken.None).ConfigureAwait(false))
         {
             result = response;
         }
@@ -158,7 +158,7 @@ public class StreamMediatRVsDispatchWithPipelineRBenchmark
     public async Task<int> MediatSG__StreamRequest_ExistRequest_ExistMediator()
     {
         var result = 0;
-        await foreach (var response in _mediatSgWithPipeline.CreateStream(StaticPingStreamMediatSg, CancellationToken.None))
+        await foreach (var response in _mediatSgWithPipeline.CreateStream(StaticPingStreamMediatSg, CancellationToken.None).ConfigureAwait(false))
         {
             result = response;
         }
@@ -170,7 +170,7 @@ public class StreamMediatRVsDispatchWithPipelineRBenchmark
     public async Task<int> DispatchR_StreamRequest_ExistRequest_ExistMediator()
     {
         var result = 0;
-        await foreach (var response in _dispatchRWithPipeline.CreateStream(StaticStreamDispatchR, CancellationToken.None))
+        await foreach (var response in _dispatchRWithPipeline.CreateStream(StaticStreamDispatchR, CancellationToken.None).ConfigureAwait(false))
         {
             result = response;
         }
@@ -190,7 +190,7 @@ public class StreamMediatRVsDispatchWithPipelineRBenchmark
             .GetRequiredService<MediatR.IMediator>();
         
         var result = 0;
-        await foreach (var response in mediator.CreateStream(StaticPingStreamMediatR, CancellationToken.None))
+        await foreach (var response in mediator.CreateStream(StaticPingStreamMediatR, CancellationToken.None).ConfigureAwait(false))
         {
             result = response;
         }
@@ -206,7 +206,7 @@ public class StreamMediatRVsDispatchWithPipelineRBenchmark
             .GetRequiredService<Mediator.IMediator>();
         
         var result = 0;
-        await foreach (var response in mediator.CreateStream(StaticPingStreamMediatSg, CancellationToken.None))
+        await foreach (var response in mediator.CreateStream(StaticPingStreamMediatSg, CancellationToken.None).ConfigureAwait(false))
         {
             result = response;
         }
@@ -222,7 +222,7 @@ public class StreamMediatRVsDispatchWithPipelineRBenchmark
             .GetRequiredService<DispatchR.Requests.IMediator>();
         
         var result = 0;
-        await foreach (var response in mediator.CreateStream(StaticStreamDispatchR, CancellationToken.None))
+        await foreach (var response in mediator.CreateStream(StaticStreamDispatchR, CancellationToken.None).ConfigureAwait(false))
         {
             result = response;
         }
@@ -240,7 +240,7 @@ public class StreamMediatRVsDispatchWithPipelineRBenchmark
         var result = 0;
         await Parallel.ForAsync(0, TotalStreamRequests, async (index, ct) =>
         {
-            await foreach (var response in _mediatRWithPipeline.CreateStream(StaticPingStreamMediatR, CancellationToken.None))
+            await foreach (var response in _mediatRWithPipeline.CreateStream(StaticPingStreamMediatR, CancellationToken.None).ConfigureAwait(false))
             {
                 result = response;
             }
@@ -255,7 +255,7 @@ public class StreamMediatRVsDispatchWithPipelineRBenchmark
         var result = 0;
         await Parallel.ForAsync(0, TotalStreamRequests, async (index, ct) =>
         {
-            await foreach (var response in _mediatSgWithPipeline.CreateStream(StaticPingStreamMediatSg, CancellationToken.None))
+            await foreach (var response in _mediatSgWithPipeline.CreateStream(StaticPingStreamMediatSg, CancellationToken.None).ConfigureAwait(false))
             {
                 result = response;
             }
@@ -270,7 +270,7 @@ public class StreamMediatRVsDispatchWithPipelineRBenchmark
         var result = 0;
         await Parallel.ForAsync(0, TotalStreamRequests, async (index, ct) =>
         {
-            await foreach (var response in _dispatchRWithPipeline.CreateStream(StaticStreamDispatchR, CancellationToken.None))
+            await foreach (var response in _dispatchRWithPipeline.CreateStream(StaticStreamDispatchR, CancellationToken.None).ConfigureAwait(false))
             {
                 result = response;
             }
@@ -290,7 +290,7 @@ public class StreamMediatRVsDispatchWithPipelineRBenchmark
         await Parallel.ForEachAsync(ScopesForMediatRWithPipeline, async (scope, ct) =>
         {
             var mediator = scope.ServiceProvider.GetRequiredService<MediatR.IMediator>();
-            await foreach (var response in mediator.CreateStream(StaticPingStreamMediatR, CancellationToken.None))
+            await foreach (var response in mediator.CreateStream(StaticPingStreamMediatR, CancellationToken.None).ConfigureAwait(false))
             {
                 result = response;
             }
@@ -307,7 +307,7 @@ public class StreamMediatRVsDispatchWithPipelineRBenchmark
         {
             var mediator = scope.ServiceProvider.GetRequiredService<Mediator.IMediator>();
             
-            await foreach (var response in mediator.CreateStream(StaticPingStreamMediatSg, CancellationToken.None))
+            await foreach (var response in mediator.CreateStream(StaticPingStreamMediatSg, CancellationToken.None).ConfigureAwait(false))
             {
                 result = response;
             }
@@ -323,7 +323,7 @@ public class StreamMediatRVsDispatchWithPipelineRBenchmark
         await Parallel.ForEachAsync(ScopesForDispatchRWithPipeline, async (scope, ct) =>
         {
             var mediator = scope.ServiceProvider.GetRequiredService<DispatchR.Requests.IMediator>();
-            await foreach (var response in mediator.CreateStream(StaticStreamDispatchR, CancellationToken.None))
+            await foreach (var response in mediator.CreateStream(StaticStreamDispatchR, CancellationToken.None).ConfigureAwait(false))
             {
                 result = response;
             }
