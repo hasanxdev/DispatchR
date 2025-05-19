@@ -1,5 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using Benchmark;
+using Benchmark.SendRequest;
+using Benchmark.StreamRequest;
 using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Columns;
 using BenchmarkDotNet.Configs;
@@ -8,7 +10,9 @@ using BenchmarkDotNet.Running;
 
 BenchmarkSwitcher.FromTypes([
     typeof(MediatRVsDispatchBenchmark),
-    typeof(MediatRVsDispatchWithPipelineRBenchmark)
+    typeof(MediatRVsDispatchWithPipelineRBenchmark),
+    typeof(StreamMediatRVsDispatchBenchmark),
+    typeof(StreamMediatRVsDispatchWithPipelineRBenchmark),
 ]).Run(args, ManualConfig.Create(DefaultConfig.Instance)
     .AddColumn(new OperationsColumn())
 );

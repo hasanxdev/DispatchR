@@ -1,6 +1,7 @@
-﻿using DispatchR;
+﻿using DispatchR.Requests;
+using DispatchR.Requests.Send;
 
-namespace Benchmark;
+namespace Benchmark.SendRequest;
 
 public sealed record PingDispatchR : IRequest<PingDispatchR, ValueTask<int>> { }
 

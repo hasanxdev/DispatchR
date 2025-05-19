@@ -1,10 +1,8 @@
 ﻿using System.Reflection;
-using System.Runtime.CompilerServices;
+using DispatchR.Requests;
+using DispatchR.Requests.Send;
+using DispatchR.Requests.Stream;
 using Microsoft.Extensions.DependencyInjection;
-using ZLinq;
-
-
-[assembly: ZLinqDropIn("", DropInGenerateTypes.Everything)]
 
 namespace DispatchR;
 
@@ -13,38 +11,61 @@ public static class DispatchRServiceCollection
     public static void AddDispatchR(this IServiceCollection services, Assembly assembly, bool withPipelines = true)
     {
         services.AddScoped<IMediator, Mediator>();
+        var requestHandlerType = typeof(IRequestHandler<,>);
+        var pipelineBehaviorType = typeof(IPipelineBehavior<,>);
+        var streamRequestHandlerType = typeof(IStreamRequestHandler<,>);
+        var streamPipelineBehaviorType = typeof(IStreamPipelineBehavior<,>);
+
         var allTypes = assembly.GetTypes()
-            .AsValueEnumerable()
             .Where(p =>
             {
                 var interfaces = p.GetInterfaces();
                 return interfaces.Length >= 1 &&
-                       interfaces.Any(p => p.IsGenericType) &&
-                       (interfaces.First(p => p.IsGenericType)
-                            .GetGenericTypeDefinition() == typeof(IRequestHandler<,>) ||
-                        interfaces.First(p => p.IsGenericType)
-                            .GetGenericTypeDefinition() == typeof(IPipelineBehavior<,>));
-            });
-        
+                       interfaces.Any(i => i.IsGenericType) &&
+                       new[]
+                       {
+                           requestHandlerType,
+                           pipelineBehaviorType,
+                           streamRequestHandlerType,
+                           streamPipelineBehaviorType
+                       }.Contains(interfaces.First(i => i.IsGenericType).GetGenericTypeDefinition());
+            }).ToList();
+
         var allHandlers = allTypes
             .Where(p =>
             {
-                return p.GetInterfaces().First(p => p.IsGenericType)
-                           .GetGenericTypeDefinition() == typeof(IRequestHandler<,>);
-            });
-        
+                var @interface = p.GetInterfaces().First(i => i.IsGenericType);
+                return new[] { requestHandlerType, streamRequestHandlerType }
+                    .Contains(@interface.GetGenericTypeDefinition());
+            }).ToList();
+
         var allPipelines = allTypes
             .Where(p =>
             {
-                return p.GetInterfaces().First(p => p.IsGenericType)
-                    .GetGenericTypeDefinition() == typeof(IPipelineBehavior<,>);
-            });
+                var @interface = p.GetInterfaces().First(i => i.IsGenericType);
+                return new[] { pipelineBehaviorType, streamPipelineBehaviorType }
+                    .Contains(@interface.GetGenericTypeDefinition());
+            }).ToList();
 
         foreach (var handler in allHandlers)
         {
-            var handlerInterface = handler.GetInterfaces()
-                .First(p => p.IsGenericType && p.GetGenericTypeDefinition() == typeof(IRequestHandler<,>));
+            object key = handler.GUID;
+            var handlerType = requestHandlerType;
+            var behaviorType = pipelineBehaviorType;
 
+            var isStream = handler.GetInterfaces()
+                .Any(p => p.IsGenericType && p.GetGenericTypeDefinition() == streamRequestHandlerType);
+            if (isStream)
+            {
+                handlerType = streamRequestHandlerType;
+                behaviorType = streamPipelineBehaviorType;
+            }
+
+            services.AddKeyedScoped(typeof(IRequestHandler), key, handler);
+
+            var handlerInterface = handler.GetInterfaces()
+                .First(p => p.IsGenericType && p.GetGenericTypeDefinition() == handlerType);
+            
             // find pipelines
             if (withPipelines)
             {
@@ -55,38 +76,32 @@ public static class DispatchRServiceCollection
                         return interfaces
                                    .FirstOrDefault(inter =>
                                        inter.IsGenericType &&
-                                       inter.GetGenericTypeDefinition() ==
-                                       typeof(IPipelineBehavior<,>))
+                                       inter.GetGenericTypeDefinition() == behaviorType)
                                    ?.GetInterfaces().First().GetGenericTypeDefinition() ==
                                handlerInterface.GetGenericTypeDefinition();
-                    });
-                
+                    }).ToList();
+
                 foreach (var pipeline in pipelines)
                 {
-                    var interfaceIPipeline = pipeline.GetInterfaces()
-                        .First(p => p.GetGenericTypeDefinition() == typeof(IPipelineBehavior<,>));
-                    services.AddScoped(interfaceIPipeline, pipeline);   
+                    services.AddKeyedScoped(typeof(IRequestHandler), key, pipeline);
                 }
             }
 
-            services.AddScoped(handler);
-            
-            var args = handlerInterface.GetGenericArguments();
-            var pipelinesType = typeof(IPipelineBehavior<,>).MakeGenericType(args[0], args[1]);
-            services.AddScoped(handlerInterface,   sp =>
+            services.AddScoped(handlerInterface, sp =>
             {
-                var pipelines = sp
-                    .GetServices(pipelinesType)
-                    .Select(s => Unsafe.As<IRequestHandler>(s)!);
+                using var pipelinesWithHandler = sp
+                    .GetKeyedServices<IRequestHandler>(key)
+                    .GetEnumerator();
                 
-                IRequestHandler lastPipeline = Unsafe.As<IRequestHandler>(sp.GetService(handler))!;
-                foreach (var pipeline in pipelines)
+                IRequestHandler? lastPipeline = null;
+                while (pipelinesWithHandler.MoveNext())
                 {
-                    pipeline.SetNext(lastPipeline);
+                    var pipeline = pipelinesWithHandler.Current;
+                    pipeline.SetNext(lastPipeline!);
                     lastPipeline = pipeline;
                 }
 
-                return lastPipeline;
+                return lastPipeline!;
             });
         }
     }

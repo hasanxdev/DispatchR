@@ -1,4 +1,4 @@
-﻿namespace DispatchR;
+﻿namespace DispatchR.Requests.Send;
 
 public interface IRequest;
 

@@ -1,15 +1,10 @@
 ﻿using BenchmarkDotNet.Attributes;
-using BenchmarkDotNet.Columns;
-using BenchmarkDotNet.Configs;
-using BenchmarkDotNet.Diagnosers;
 using BenchmarkDotNet.Order;
-using BenchmarkDotNet.Reports;
-using MediatR;
 using DispatchR;
 using Mediator;
 using IMediator = MediatR.IMediator;
 
-namespace Benchmark;
+namespace Benchmark.SendRequest;
 
 [MemoryDiagnoser]
 [Orderer(SummaryOrderPolicy.FastestToSlowest)]
@@ -19,7 +14,7 @@ public class MediatRVsDispatchWithPipelineRBenchmark
     private IServiceScope _serviceScopeForMediatRWithPipeline;
     private IServiceScope _serviceScopeForMediatSgWithPipeline;
     private IServiceScope _serviceScopeForDispatchRWithPipeline;
-    private DispatchR.IMediator _dispatchRWithPipeline;
+    private DispatchR.Requests.IMediator _dispatchRWithPipeline;
     private IMediator _mediatRWithPipeline;
     private Mediator.IMediator _mediatSgWithPipeline;
     private static readonly PingDispatchR StaticDispatchR = new();
@@ -53,7 +48,7 @@ public class MediatRVsDispatchWithPipelineRBenchmark
 
         withPipelineServices.AddDispatchR(typeof(PingDispatchR).Assembly);
         var buildServicesWithoutPipeline = withPipelineServices.BuildServiceProvider();
-        _dispatchRWithPipeline = buildServicesWithoutPipeline.CreateScope().ServiceProvider.GetRequiredService<DispatchR.IMediator>();
+        _dispatchRWithPipeline = buildServicesWithoutPipeline.CreateScope().ServiceProvider.GetRequiredService<DispatchR.Requests.IMediator>();
         _mediatRWithPipeline = buildServicesWithoutPipeline.CreateScope().ServiceProvider.GetRequiredService<MediatR.IMediator>();
         _mediatSgWithPipeline = buildServicesWithoutPipeline.CreateScope().ServiceProvider.GetRequiredService<Mediator.IMediator>();
         _serviceScopeForMediatRWithPipeline = buildServicesWithoutPipeline.CreateScope();
@@ -84,10 +79,10 @@ public class MediatRVsDispatchWithPipelineRBenchmark
         Parallel.ForEach(ScopesForDispatchRWithPipeline, scope => scope.Dispose());
     }
     
-    #region SendRequest_With_Pipeline_ExistCommand_ExistMediator_WithOutHandler
+    #region SendRequest_With_Pipeline_ExistRequest_ExistMediator_WithOutHandler
 
     [Benchmark(Baseline = true)]
-    public Task<int> MediatR___SendRequest_ExistCommand_ExistMediator_WithOut_Handler()
+    public Task<int> MediatR___SendRequest_ExistRequest_ExistMediator_WithOut_Handler()
     {
         try
         {
@@ -100,7 +95,7 @@ public class MediatRVsDispatchWithPipelineRBenchmark
     }
 
     [Benchmark]
-    public ValueTask<int> MediatSG__SendRequest_ExistCommand_ExistMediator_WithOut_Handler()
+    public ValueTask<int> MediatSG__SendRequest_ExistRequest_ExistMediator_WithOut_Handler()
     {
         try
         {
@@ -113,7 +108,7 @@ public class MediatRVsDispatchWithPipelineRBenchmark
     }
     
     [Benchmark]
-    public ValueTask<int> DispatchR_SendRequest_ExistCommand_ExistMediator_WithOut_Handler()
+    public ValueTask<int> DispatchR_SendRequest_ExistRequest_ExistMediator_WithOut_Handler()
     {
         try
         {
@@ -127,32 +122,32 @@ public class MediatRVsDispatchWithPipelineRBenchmark
 
     #endregion
     
-    #region SendRequest_ExistCommand_ExistMediator
+    #region SendRequest_ExistRequest_ExistMediator
 
     [Benchmark]
-    public Task<int> MediatR___SendRequest_ExistCommand_ExistMediator()
+    public Task<int> MediatR___SendRequest_ExistRequest_ExistMediator()
     {
         return _mediatRWithPipeline.Send(StaticPingMediatR, CancellationToken.None);
     }
     
     [Benchmark]
-    public ValueTask<int> MediatSG__SendRequest_ExistCommand_ExistMediator()
+    public ValueTask<int> MediatSG__SendRequest_ExistRequest_ExistMediator()
     {
         return _mediatSgWithPipeline.Send(StaticPingMediatSg, CancellationToken.None);
     }
 
     [Benchmark]
-    public ValueTask<int> DispatchR_SendRequest_ExistCommand_ExistMediator()
+    public ValueTask<int> DispatchR_SendRequest_ExistRequest_ExistMediator()
     {
         return _dispatchRWithPipeline.Send(StaticDispatchR, CancellationToken.None);
     }
 
     #endregion
     
-    #region SendRequest_ExistCommand_GetMediator
+    #region SendRequest_ExistRequest_GetMediator
 
     [Benchmark]
-    public Task<int> MediatR___SendRequest_ExistCommand_GetMediator()
+    public Task<int> MediatR___SendRequest_ExistRequest_GetMediator()
     {
         return _serviceScopeForMediatRWithPipeline
             .ServiceProvider
@@ -161,7 +156,7 @@ public class MediatRVsDispatchWithPipelineRBenchmark
     }
     
     [Benchmark]
-    public ValueTask<int> MediatSG__SendRequest_ExistCommand_GetMediator()
+    public ValueTask<int> MediatSG__SendRequest_ExistRequest_GetMediator()
     {
         return _serviceScopeForMediatSgWithPipeline
             .ServiceProvider
@@ -170,20 +165,20 @@ public class MediatRVsDispatchWithPipelineRBenchmark
     }
 
     [Benchmark]
-    public ValueTask<int> DispatchR_SendRequest_ExistCommand_GetMediator()
+    public ValueTask<int> DispatchR_SendRequest_ExistRequest_GetMediator()
     {
         return _serviceScopeForDispatchRWithPipeline
             .ServiceProvider
-            .GetRequiredService<DispatchR.IMediator>()
+            .GetRequiredService<DispatchR.Requests.IMediator>()
             .Send(StaticDispatchR, CancellationToken.None);
     }
 
     #endregion
     
-    #region SendRequest_ExistCommand_ExistMediator_Parallel
+    #region SendRequest_ExistRequest_ExistMediator_Parallel
     
     [Benchmark(OperationsPerInvoke = TotalSendRequests)]
-    public async Task<int> MediatR___SendRequest_ExistCommand_ExistMediator_Parallel()
+    public async Task<int> MediatR___SendRequest_ExistRequest_ExistMediator_Parallel()
     {
         var result = 0;
         await Parallel.ForAsync(0, TotalSendRequests, async (index, ct) =>
@@ -195,7 +190,7 @@ public class MediatRVsDispatchWithPipelineRBenchmark
     }
     
     [Benchmark(OperationsPerInvoke = TotalSendRequests)]
-    public async Task<int> MediatSG__SendRequest_ExistCommand_ExistMediator_Parallel()
+    public async Task<int> MediatSG__SendRequest_ExistRequest_ExistMediator_Parallel()
     {
         var result = 0;
         await Parallel.ForAsync(0, TotalSendRequests, async (index, ct) =>
@@ -207,7 +202,7 @@ public class MediatRVsDispatchWithPipelineRBenchmark
     }
     
     [Benchmark(OperationsPerInvoke = TotalSendRequests)]
-    public async Task<int> DispatchR_SendRequest_ExistCommand_ExistMediator_Parallel()
+    public async Task<int> DispatchR_SendRequest_ExistRequest_ExistMediator_Parallel()
     {
         var result = 0;
         await Parallel.ForAsync(0, TotalSendRequests, async (index, ct) =>
@@ -220,10 +215,10 @@ public class MediatRVsDispatchWithPipelineRBenchmark
     
     #endregion
     
-    #region SendRequest_ExistCommand_GetMediator_ExistScopes_Parallel
+    #region SendRequest_ExistRequest_GetMediator_ExistScopes_Parallel
     
     [Benchmark(OperationsPerInvoke = TotalSendRequests)]
-    public async Task<int> MediatR___SendRequest_ExistCommand_GetMediator_ExistScopes_Parallel()
+    public async Task<int> MediatR___SendRequest_ExistRequest_GetMediator_ExistScopes_Parallel()
     {
         var result = 0;
         await Parallel.ForEachAsync(ScopesForMediatRWithPipeline, async (scope, ct) =>
@@ -236,7 +231,7 @@ public class MediatRVsDispatchWithPipelineRBenchmark
     }
     
     [Benchmark(OperationsPerInvoke = TotalSendRequests)]
-    public async Task<int> MediatSG__SendRequest_ExistCommand_GetMediator_ExistScopes_Parallel()
+    public async Task<int> MediatSG__SendRequest_ExistRequest_GetMediator_ExistScopes_Parallel()
     {
         var result = 0;
         await Parallel.ForEachAsync(ScopesForMediatSgWithPipeline, async (scope, ct) =>
@@ -249,12 +244,12 @@ public class MediatRVsDispatchWithPipelineRBenchmark
     }
     
     [Benchmark(OperationsPerInvoke = TotalSendRequests)]
-    public async Task<int> DispatchR_SendRequest_ExistCommand_GetMediator_ExistScopes_Parallel()
+    public async Task<int> DispatchR_SendRequest_ExistRequest_GetMediator_ExistScopes_Parallel()
     {
         var result = 0;
         await Parallel.ForEachAsync(ScopesForDispatchRWithPipeline, async (scope, ct) =>
         {
-            result = await scope.ServiceProvider.GetRequiredService<DispatchR.IMediator>()
+            result = await scope.ServiceProvider.GetRequiredService<DispatchR.Requests.IMediator>()
                 .Send(StaticDispatchR, CancellationToken.None);
         });
         
