@@ -6,14 +6,12 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Sample;
 
-// تعریف یک نوتیفیکیشن
 public class OrderCreatedNotification : INotification
 {
     public int OrderId { get; set; }
     public string CustomerName { get; set; }
 }
 
-// تعریف هندلر برای نوتیفیکیشن
 public class OrderCreatedNotificationHandler : INotificationHandler<OrderCreatedNotification>
 {
     public Task Handle(OrderCreatedNotification notification, CancellationToken cancellationToken)
@@ -33,7 +31,6 @@ public class NotificationSample
         var serviceProvider = services.BuildServiceProvider();
         var mediator = serviceProvider.GetRequiredService<IMediator>();
 
-        // ایجاد و ارسال نوتیفیکیشن
         var notification = new OrderCreatedNotification { OrderId = 1, CustomerName = "John Doe" };
         await mediator.Publish(notification, CancellationToken.None);
 
