@@ -2,6 +2,7 @@ using System.Reflection;
 using DispatchR;
 using DispatchR.Requests;
 using Sample;
+using Scalar.AspNetCore;
 using DispatchRSample = Sample.DispatchR.SendRequest;
 using DispatchRStreamSample = Sample.DispatchR.StreamRequest;
 using MediatRSample = Sample.MediatR.SendRequest;
@@ -29,6 +30,7 @@ var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
+    app.MapScalarApiReference();
 }
 
 app.UseHttpsRedirection();
@@ -94,6 +96,14 @@ app.MapGet("/Stream/DispatchR", async (DispatchR.Requests.IMediator dispatchR, I
     }
     
     return "It works";
+});
+
+app.MapGet("Notification", async () =>
+{
+    NotificationSample notificationSample = new();
+    var result = await notificationSample.Run();
+
+    return Results.Ok();
 });
 
 app.Run();

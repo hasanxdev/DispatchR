@@ -15,6 +15,7 @@ public static class DispatchRServiceCollection
         var pipelineBehaviorType = typeof(IPipelineBehavior<,>);
         var streamRequestHandlerType = typeof(IStreamRequestHandler<,>);
         var streamPipelineBehaviorType = typeof(IStreamPipelineBehavior<,>);
+        var notificationHandlerType = typeof(INotificationHandler<>);
 
         var allTypes = assembly.GetTypes()
             .Where(p =>
@@ -46,6 +47,10 @@ public static class DispatchRServiceCollection
                 return new[] { pipelineBehaviorType, streamPipelineBehaviorType }
                     .Contains(@interface.GetGenericTypeDefinition());
             }).ToList();
+
+        var allNotificationHandlers = assembly.GetTypes()
+            .Where(t => t.GetInterfaces().Any(i => i.IsGenericType && i.GetGenericTypeDefinition() == notificationHandlerType))
+            .ToList();
 
         foreach (var handler in allHandlers)
         {
@@ -103,6 +108,12 @@ public static class DispatchRServiceCollection
 
                 return lastPipeline!;
             });
+        }
+
+        foreach (var handler in allNotificationHandlers)
+        {
+            var handlerInterface = handler.GetInterfaces().First(i => i.IsGenericType && i.GetGenericTypeDefinition() == notificationHandlerType);
+            services.AddScoped(handlerInterface, handler);
         }
     }
 }
