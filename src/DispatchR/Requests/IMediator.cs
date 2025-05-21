@@ -12,6 +12,9 @@ public interface IMediator
 
     IAsyncEnumerable<TResponse> CreateStream<TRequest, TResponse>(IStreamRequest<TRequest, TResponse> request,
         CancellationToken cancellationToken) where TRequest : class, IStreamRequest, new();
+
+    Task Publish<TNotification>(TNotification notification, CancellationToken cancellationToken)
+        where TNotification : class, INotification, new();
 }
 
 public sealed class Mediator(IServiceProvider serviceProvider) : IMediator
@@ -28,5 +31,15 @@ public sealed class Mediator(IServiceProvider serviceProvider) : IMediator
     {
         return serviceProvider.GetRequiredService<IStreamRequestHandler<TRequest, TResponse>>()
             .Handle(Unsafe.As<TRequest>(request), cancellationToken);
+    }
+
+    public async Task Publish<TNotification>(TNotification notification, CancellationToken cancellationToken)
+        where TNotification : class, INotification, new()
+    {
+        var handlers = serviceProvider.GetServices<INotificationHandler<TNotification>>();
+        foreach (var handler in handlers)
+        {
+            await handler.Handle(notification, cancellationToken).ConfigureAwait(false);
+        }
     }
 }
