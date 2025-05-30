@@ -22,23 +22,23 @@ public static class DispatchRServiceCollection
         var streamRequestHandlerType = typeof(IStreamRequestHandler<,>);
         var streamPipelineBehaviorType = typeof(IStreamPipelineBehavior<,>);
         var syncNotificationHandlerType = typeof(INotificationHandler<>);
-        var aSyncNotificationHandlerType = typeof(INotificationHandler<,>);
 
         var allTypes = assembly.GetTypes()
             .Where(p =>
             {
                 var interfaces = p.GetInterfaces();
                 return interfaces.Length >= 1 &&
-                       interfaces.Any(i => i.IsGenericType) &&
-                       new[]
-                       {
-                           requestHandlerType,
-                           pipelineBehaviorType,
-                           streamRequestHandlerType,
-                           streamPipelineBehaviorType,
-                           syncNotificationHandlerType,
-                           aSyncNotificationHandlerType
-                       }.Contains(interfaces.First(i => i.IsGenericType).GetGenericTypeDefinition());
+                       interfaces
+                           .Where(i => i.IsGenericType)
+                           .Select(i => i.GetGenericTypeDefinition())
+                           .Any(i => new[]
+                           {
+                               requestHandlerType,
+                               pipelineBehaviorType,
+                               streamRequestHandlerType,
+                               streamPipelineBehaviorType,
+                               syncNotificationHandlerType
+                           }.Contains(i));
             }).ToList();
 
         var allHandlers = allTypes
@@ -57,23 +57,14 @@ public static class DispatchRServiceCollection
                     .Contains(@interface.GetGenericTypeDefinition());
             }).ToList();
 
-        var allNotifications = allTypes
-            .Where(p =>
-            {
-                var @interface = p.GetInterfaces().First(i => i.IsGenericType);
-                return new[] { syncNotificationHandlerType, aSyncNotificationHandlerType }
-                    .Contains(@interface.GetGenericTypeDefinition());
-            }).ToList();
+        RegisterNotification(services, allTypes, syncNotificationHandlerType);
+        RegisterHandlers(services, withPipelines, allHandlers, requestHandlerType, pipelineBehaviorType, streamRequestHandlerType, streamPipelineBehaviorType, allPipelines);
+    }
 
-        foreach (var notification in allNotifications)
-        {
-            var @interface = notification.GetInterfaces()
-                .First(i => i.IsGenericType &&
-                            new[] { syncNotificationHandlerType, aSyncNotificationHandlerType }
-                                .Contains(i.GetGenericTypeDefinition()));
-            services.AddScoped(@interface, notification);
-        }
-
+    private static void RegisterHandlers(IServiceCollection services, bool withPipelines, List<Type> allHandlers,
+        Type requestHandlerType, Type pipelineBehaviorType, Type streamRequestHandlerType, Type streamPipelineBehaviorType,
+        List<Type> allPipelines)
+    {
         foreach (var handler in allHandlers)
         {
             object key = handler.GUID;
@@ -130,6 +121,40 @@ public static class DispatchRServiceCollection
 
                 return lastPipeline!;
             });
+        }
+    }
+
+    private static void RegisterNotification(IServiceCollection services, List<Type> allTypes, Type syncNotificationHandlerType)
+    {
+        var allNotifications = allTypes
+            .Where(p =>
+            {
+                return p.GetInterfaces()
+                    .Where(i => i.IsGenericType)
+                    .Select(i => i.GetGenericTypeDefinition())
+                    .Any(i => new[]
+                    {
+                        syncNotificationHandlerType
+                    }.Contains(i));
+            })
+            .GroupBy(p =>
+            {
+                var @interface = p.GetInterfaces()
+                    .Where(i => i.IsGenericType)
+                    .First(i => new[]
+                    {
+                        syncNotificationHandlerType
+                    }.Contains(i.GetGenericTypeDefinition()));
+                return @interface.GenericTypeArguments.First();
+            })
+            .ToList();
+
+        foreach (var notification in allNotifications)
+        {
+            foreach (var types in notification.ToList())
+            {
+                services.AddScoped(typeof(INotificationHandler<>).MakeGenericType(notification.Key), types);
+            }
         }
     }
 }

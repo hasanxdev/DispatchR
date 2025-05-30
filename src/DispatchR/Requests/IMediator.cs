@@ -13,8 +13,8 @@ public interface IMediator
 
     IAsyncEnumerable<TResponse> CreateStream<TRequest, TResponse>(IStreamRequest<TRequest, TResponse> request,
         CancellationToken cancellationToken) where TRequest : class, IStreamRequest, new();
-    
-    Task Publish<TNotification>(TNotification request, CancellationToken cancellationToken)
+
+    ValueTask Publish<TNotification>(TNotification request, CancellationToken cancellationToken)
         where TNotification : INotification;
 }
 
@@ -34,28 +34,19 @@ public sealed class Mediator(IServiceProvider serviceProvider) : IMediator
             .Handle(Unsafe.As<TRequest>(request), cancellationToken);
     }
 
-    public async Task Publish<TNotification>(TNotification request, CancellationToken cancellationToken) where TNotification : INotification
+    public async ValueTask Publish<TNotification>(TNotification request, CancellationToken cancellationToken) where TNotification : INotification
     {
-        using var taskHandlers = serviceProvider.GetServices<INotificationHandler<TNotification, Task>>().GetEnumerator();
-        using var valueTaskHandlers = serviceProvider.GetServices<INotificationHandler<TNotification, ValueTask>>().GetEnumerator();
-        using var syncHandlers = serviceProvider.GetServices<INotificationHandler<TNotification>>().GetEnumerator();
-        
-        while (taskHandlers.MoveNext())
+        var notificationsInDi = serviceProvider
+            .GetRequiredService<IEnumerable<INotificationHandler<TNotification>>>();
+        var notifications = Unsafe.As<INotificationHandler<TNotification>[]>(notificationsInDi);
+        for (int i = 0; i < notifications.Length; i++)
         {
-            var handler = taskHandlers.Current;
-            await handler.Handle(request, cancellationToken);
-        }
-        
-        while (valueTaskHandlers.MoveNext())
-        {
-            var handler = valueTaskHandlers.Current;
-            await handler.Handle(request, cancellationToken);
-        }
-
-        while (syncHandlers.MoveNext())
-        {
-            var handler = syncHandlers.Current;
-            handler.Handle(request, cancellationToken);
+            var notification = notifications[i];
+            var valueTask = notification.Handle(request, cancellationToken);
+            if (valueTask.IsCompletedSuccessfully is false)
+            {
+                await valueTask;
+            }   
         }
     }
 }
