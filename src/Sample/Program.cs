@@ -2,10 +2,13 @@ using System.Reflection;
 using DispatchR;
 using DispatchR.Requests;
 using Sample;
+using Sample.MediatR.Notification;
 using DispatchRSample = Sample.DispatchR.SendRequest;
 using DispatchRStreamSample = Sample.DispatchR.StreamRequest;
+using DispatchRNotificationSample = Sample.DispatchR.Notification;
 using MediatRSample = Sample.MediatR.SendRequest;
 using MediatRStreamSample = Sample.MediatR.StreamRequest;
+using MediatRNotificationSample = Sample.MediatR.Notification;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -93,6 +96,18 @@ app.MapGet("/Stream/DispatchR", async (DispatchR.Requests.IMediator dispatchR, I
         logger.LogInformation($"stream count in DispatchR: {count}");
     }
     
+    return "It works";
+});
+
+app.MapGet("/Notification/MediatR", async (MediatR.IMediator mediator, ILogger<Program> logger) =>
+{
+    await mediator.Publish(new MediatRNotificationSample.MultiHandlersNotification(Guid.Empty));
+    return "It works";
+});
+
+app.MapGet("/Notification/DispatchR", async (DispatchR.Requests.IMediator mediator, ILogger<Program> logger) =>
+{
+    await mediator.Publish(new DispatchRNotificationSample.MultiHandlersNotification(Guid.Empty), CancellationToken.None);
     return "It works";
 });
 

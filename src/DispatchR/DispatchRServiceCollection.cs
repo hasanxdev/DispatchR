@@ -1,5 +1,6 @@
 ﻿using System.Reflection;
 using DispatchR.Requests;
+using DispatchR.Requests.Notification;
 using DispatchR.Requests.Send;
 using DispatchR.Requests.Stream;
 using Microsoft.Extensions.DependencyInjection;
@@ -11,10 +12,17 @@ public static class DispatchRServiceCollection
     public static void AddDispatchR(this IServiceCollection services, Assembly assembly, bool withPipelines = true)
     {
         services.AddScoped<IMediator, Mediator>();
+        RegisterRequest(services, assembly, withPipelines);
+    }
+
+    private static void RegisterRequest(IServiceCollection services, Assembly assembly, bool withPipelines)
+    {
         var requestHandlerType = typeof(IRequestHandler<,>);
         var pipelineBehaviorType = typeof(IPipelineBehavior<,>);
         var streamRequestHandlerType = typeof(IStreamRequestHandler<,>);
         var streamPipelineBehaviorType = typeof(IStreamPipelineBehavior<,>);
+        var syncNotificationHandlerType = typeof(INotificationHandler<>);
+        var aSyncNotificationHandlerType = typeof(INotificationHandler<,>);
 
         var allTypes = assembly.GetTypes()
             .Where(p =>
@@ -27,7 +35,9 @@ public static class DispatchRServiceCollection
                            requestHandlerType,
                            pipelineBehaviorType,
                            streamRequestHandlerType,
-                           streamPipelineBehaviorType
+                           streamPipelineBehaviorType,
+                           syncNotificationHandlerType,
+                           aSyncNotificationHandlerType
                        }.Contains(interfaces.First(i => i.IsGenericType).GetGenericTypeDefinition());
             }).ToList();
 
@@ -47,6 +57,23 @@ public static class DispatchRServiceCollection
                     .Contains(@interface.GetGenericTypeDefinition());
             }).ToList();
 
+        var allNotifications = allTypes
+            .Where(p =>
+            {
+                var @interface = p.GetInterfaces().First(i => i.IsGenericType);
+                return new[] { syncNotificationHandlerType, aSyncNotificationHandlerType }
+                    .Contains(@interface.GetGenericTypeDefinition());
+            }).ToList();
+
+        foreach (var notification in allNotifications)
+        {
+            var @interface = notification.GetInterfaces()
+                .First(i => i.IsGenericType &&
+                            new[] { syncNotificationHandlerType, aSyncNotificationHandlerType }
+                                .Contains(i.GetGenericTypeDefinition()));
+            services.AddScoped(@interface, notification);
+        }
+
         foreach (var handler in allHandlers)
         {
             object key = handler.GUID;
@@ -65,7 +92,7 @@ public static class DispatchRServiceCollection
 
             var handlerInterface = handler.GetInterfaces()
                 .First(p => p.IsGenericType && p.GetGenericTypeDefinition() == handlerType);
-            
+
             // find pipelines
             if (withPipelines)
             {
@@ -92,7 +119,7 @@ public static class DispatchRServiceCollection
                 using var pipelinesWithHandler = sp
                     .GetKeyedServices<IRequestHandler>(key)
                     .GetEnumerator();
-                
+
                 IRequestHandler? lastPipeline = null;
                 while (pipelinesWithHandler.MoveNext())
                 {
