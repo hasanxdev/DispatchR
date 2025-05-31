@@ -3,7 +3,7 @@ using DispatchR.Requests.Send;
 
 namespace DispatchR.Requests.Notification;
 
-public interface INotificationHandler<in TRequest> : IRequestHandler where TRequest : INotification
+public interface INotificationHandler<in TRequestEvent> : IRequestHandler where TRequestEvent : INotification
 {
-    ValueTask Handle(TRequest request, CancellationToken cancellationToken);
+    ValueTask Handle(TRequestEvent request, CancellationToken cancellationToken);
 }

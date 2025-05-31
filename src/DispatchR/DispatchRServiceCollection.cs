@@ -1,4 +1,5 @@
 ﻿using System.Reflection;
+using System.Runtime.CompilerServices;
 using DispatchR.Requests;
 using DispatchR.Requests.Notification;
 using DispatchR.Requests.Send;
@@ -9,14 +10,9 @@ namespace DispatchR;
 
 public static class DispatchRServiceCollection
 {
-    public static void AddDispatchR(this IServiceCollection services, Assembly assembly, bool withPipelines = true)
+    public static void AddDispatchR(this IServiceCollection services, Assembly assembly, bool withPipelines = true, bool withNotifications = true)
     {
         services.AddScoped<IMediator, Mediator>();
-        RegisterRequest(services, assembly, withPipelines);
-    }
-
-    private static void RegisterRequest(IServiceCollection services, Assembly assembly, bool withPipelines)
-    {
         var requestHandlerType = typeof(IRequestHandler<,>);
         var pipelineBehaviorType = typeof(IPipelineBehavior<,>);
         var streamRequestHandlerType = typeof(IStreamRequestHandler<,>);
@@ -41,6 +37,19 @@ public static class DispatchRServiceCollection
                            }.Contains(i));
             }).ToList();
 
+        if (withNotifications)
+        {
+            RegisterNotification(services, allTypes, syncNotificationHandlerType);
+        }
+        
+        RegisterHandlers(services, allTypes, requestHandlerType, pipelineBehaviorType, 
+            streamRequestHandlerType, streamPipelineBehaviorType, withPipelines);
+    }
+
+    private static void RegisterHandlers(IServiceCollection services, List<Type> allTypes,
+        Type requestHandlerType, Type pipelineBehaviorType, Type streamRequestHandlerType,
+        Type streamPipelineBehaviorType, bool withPipelines)
+    {
         var allHandlers = allTypes
             .Where(p =>
             {
@@ -56,15 +65,7 @@ public static class DispatchRServiceCollection
                 return new[] { pipelineBehaviorType, streamPipelineBehaviorType }
                     .Contains(@interface.GetGenericTypeDefinition());
             }).ToList();
-
-        RegisterNotification(services, allTypes, syncNotificationHandlerType);
-        RegisterHandlers(services, withPipelines, allHandlers, requestHandlerType, pipelineBehaviorType, streamRequestHandlerType, streamPipelineBehaviorType, allPipelines);
-    }
-
-    private static void RegisterHandlers(IServiceCollection services, bool withPipelines, List<Type> allHandlers,
-        Type requestHandlerType, Type pipelineBehaviorType, Type streamRequestHandlerType, Type streamPipelineBehaviorType,
-        List<Type> allPipelines)
-    {
+        
         foreach (var handler in allHandlers)
         {
             object key = handler.GUID;
@@ -107,19 +108,18 @@ public static class DispatchRServiceCollection
 
             services.AddScoped(handlerInterface, sp =>
             {
-                using var pipelinesWithHandler = sp
-                    .GetKeyedServices<IRequestHandler>(key)
-                    .GetEnumerator();
-
-                IRequestHandler? lastPipeline = null;
-                while (pipelinesWithHandler.MoveNext())
+                var pipelinesWithHandler = Unsafe
+                    .As<IRequestHandler[]>(sp.GetKeyedServices<IRequestHandler>(key));
+                
+                IRequestHandler lastPipeline = pipelinesWithHandler[0];
+                for (int i = 1; i < pipelinesWithHandler.Length; i++)
                 {
-                    var pipeline = pipelinesWithHandler.Current;
-                    pipeline.SetNext(lastPipeline!);
+                    var pipeline = pipelinesWithHandler[i];
+                    pipeline.SetNext(lastPipeline);
                     lastPipeline = pipeline;
                 }
 
-                return lastPipeline!;
+                return lastPipeline;
             });
         }
     }

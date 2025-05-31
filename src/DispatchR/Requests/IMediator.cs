@@ -36,8 +36,7 @@ public sealed class Mediator(IServiceProvider serviceProvider) : IMediator
 
     public async ValueTask Publish<TNotification>(TNotification request, CancellationToken cancellationToken) where TNotification : INotification
     {
-        var notificationsInDi = serviceProvider
-            .GetRequiredService<IEnumerable<INotificationHandler<TNotification>>>();
+        var notificationsInDi = serviceProvider.GetRequiredService<IEnumerable<INotificationHandler<TNotification>>>();
         
         var notifications = Unsafe.As<INotificationHandler<TNotification>[]>(notificationsInDi);
         foreach (var notification in notifications)

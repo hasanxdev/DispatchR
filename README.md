@@ -17,6 +17,18 @@
 - Allocates nothing on the heap — ideal for high-throughput scenarios
 - Outperforms existing solutions in most real-world benchmarks
 - Seamlessly compatible with MediatR — migrate with minimal effort
+- Currently supports
+  1. Simple Request:
+     1. `IRequest<TRquest, TResponse>`
+     2. `IRequestHandler<TRequest, TResponse>`
+     3. `IPipelineBehavior<TRequest, TResponse>`
+  2. Stream Request:
+     1. `IStreamRequest<TRquest, TResponse>`
+     2. `IStreamRequestHandler<TRequest, TResponse>`
+     3. `IStreamPipelineBehavior<TRequest, TResponse>`
+  3. Notifications:
+     1. `INotification`
+     2. `INotificationHandler<TRequestEvent>`
 > :bulb: **Tip:** *If you're looking for a mediator with the raw performance of hand-written code, DispatchR is built for you.*
 
 # Syntax Comparison: DispatchR vs MediatR
@@ -174,6 +186,39 @@ public sealed class CounterPipelineStreamHandler : IStreamPipelineBehavior<Count
 }
 ```
 
+------------
+## Notification
+
+### Notification MediatR
+```csharp
+public sealed record Event(Guid Id) : INotification;
+
+public sealed class EventHandler(ILogger<Event> logger) : INotificationHandler<Event>
+{
+    public Task Handle(Event notification, CancellationToken cancellationToken)
+    {
+        logger.LogInformation("Received notification");
+        return Task.CompletedTask;
+    }
+}
+```
+
+### Stream Pipeline DispatchR
+1. Use ___ValueTask___
+
+```csharp
+public sealed record Event(Guid Id) : INotification;
+
+public sealed class EventHandler(ILogger<Event> logger) : INotificationHandler<Event>
+{
+    public ValueTask Handle(Event notification, CancellationToken cancellationToken)
+    {
+        logger.LogInformation("Received notification");
+        return ValueTask.CompletedTask;
+    }
+}
+```
+
 # ⚡ How DispatchR Achieves High Performance
 
 ###### DispatchR is designed with one goal in mind: **maximize performance with minimal memory usage**. Here's how it accomplishes that:
@@ -195,36 +240,54 @@ public TResponse Send<TRequest, TResponse>(IRequest<TRequest, TResponse> request
 ```csharp
 public IAsyncEnumerable<TResponse> CreateStream<TRequest, TResponse>(IStreamRequest<TRequest, TResponse> request, 
         CancellationToken cancellationToken) where TRequest : class, IStreamRequest, new()
- {
-     return serviceProvider.GetRequiredService<IStreamRequestHandler<TRequest, TResponse>>()
-         .Handle(Unsafe.As<TRequest>(request), cancellationToken);
- }
+{
+    return serviceProvider.GetRequiredService<IStreamRequestHandler<TRequest, TResponse>>()
+        .Handle(Unsafe.As<TRequest>(request), cancellationToken);
+}
 ```
-
 **Only the handler is resolved and directly invoked!**
+
+## What Happens Inside the `Publish` Method?
+
+```csharp
+public async ValueTask Publish<TNotification>(TNotification request, CancellationToken cancellationToken) where TNotification : INotification
+{
+    var notificationsInDi = serviceProvider.GetRequiredService<IEnumerable<INotificationHandler<TNotification>>>();
+    
+    var notifications = Unsafe.As<INotificationHandler<TNotification>[]>(notificationsInDi);
+    foreach (var notification in notifications)
+    {
+        var valueTask = notification.Handle(request, cancellationToken);
+        if (valueTask.IsCompletedSuccessfully is false) // <-- Handle sync notifications
+        {
+            await valueTask;
+        }
+    }
+}
+```
 
 But the real magic happens behind the scenes when DI resolves the handler dependency:
 > 💡 __Tips:__ 
 > 1. *We cache the handler using DI, so in scoped scenarios, the object is constructed only once and reused afterward.*
 > 
-> 2. *In terms of Dependency Injection (DI), everything is an IRequestHandler, it's just the keys that differ.
+> 2. *In terms of Dependency Injection (DI), everything in Requests is an IRequestHandler, it's just the keys that differ.
      When you request a specific key, a set of 1+N objects is returned: the first one is the actual handler, and the rest are the pipeline behaviors.*
+
 ```csharp
 services.AddScoped(handlerInterface, sp =>
 {
-    using var pipelinesWithHandler = sp
-        .GetKeyedServices<IRequestHandler>(key)
-        .GetEnumerator();
+    var pipelinesWithHandler = Unsafe
+        .As<IRequestHandler[]>(sp.GetKeyedServices<IRequestHandler>(key));
     
-    IRequestHandler? lastPipeline = null;
-    while (pipelinesWithHandler.MoveNext())
+    IRequestHandler lastPipeline = pipelinesWithHandler[0];
+    for (int i = 1; i < pipelinesWithHandler.Length; i++)
     {
-        var pipeline = pipelinesWithHandler.Current;
-        pipeline.SetNext(lastPipeline!);
+        var pipeline = pipelinesWithHandler[i];
+        pipeline.SetNext(lastPipeline);
         lastPipeline = pipeline;
     }
 
-    return lastPipeline!;
+    return lastPipeline;
 });
 ```
 
@@ -233,23 +296,24 @@ This elegant design chains pipeline behaviors at resolution time — no static l
 ## 🪴 How to use?
 It's simple! Just use the following code:
 ```csharp
-builder.Services.AddDispatchR(typeof(MyCommand).Assembly, withPipelines: true);
+builder.Services.AddDispatchR(typeof(MyCommand).Assembly, withPipelines: true, withNotifications: true);
 ```
 This code will automatically register all pipelines by default. If you need to register them in a specific order, you can either add them manually or write your own reflection logic:
 ```csharp
-builder.Services.AddDispatchR(typeof(MyCommand).Assembly, withPipelines: false);
+builder.Services.AddDispatchR(typeof(MyCommand).Assembly, withPipelines: false, withNotifications: false);
 builder.Services.AddScoped<IPipelineBehavior<MyCommand, int>, PipelineBehavior>();
 builder.Services.AddScoped<IPipelineBehavior<MyCommand, int>, ValidationBehavior>();
 builder.Services.AddScoped<IStreamPipelineBehavior<MyStreamCommand, int>, ValidationBehavior>();
+builder.Services.AddScoped<INotificationHandler<Event>, EventHandler>();
 ```
 ### 💡 Key Notes:
-1. Automatic pipeline registration is enabled by default
-2. Manual registration allows for custom pipeline ordering
+1. Automatic pipeline and notification registration is enabled by default
+2. Manual registration allows for custom pipeline or notification ordering
 3. You can implement custom reflection if needed
 
 ## ✨ How to install?
 ```
-dotnet add package DispatchR.Mediator --version 1.1.0
+dotnet add package DispatchR.Mediator --version 1.2.0
 ```
 
 # 🧪 Bechmark Result:
@@ -268,6 +332,10 @@ Version 3 of Mediator Source Generator was excluded due to significantly lower p
 ![Benchmark Result](./benchmark/results/stream-with-pipeline-stable.png)
 #### 2. MediatR vs Mediator Source Generator vs DispatchR Without Pipeline
 ![Benchmark Result](./benchmark/results/stream-without-pipeline-stable.png)
+
+### Notification
+#### 1. MediatR vs Mediator Source Generator vs DispatchR
+![Benchmark Result](./benchmark/results/notification-stable.png)
 
 ## ✨ Contribute & Help Grow This Package! ✨
 We welcome contributions to make this package even better! ❤️
