@@ -1,114 +1,11 @@
-﻿using Benchmark.StreamRequest;
+﻿using Benchmark.Notification.MultiHandlers;
+using Benchmark.Notification.MultiHandlersAsync;
+using Benchmark.Notification.SingleHandler;
 using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Order;
 using DispatchR;
-using Mediator;
-using IMediator = MediatR.IMediator;
 
 namespace Benchmark.Notification;
-
-public sealed record SingleHandlerNotification(Guid Id) : INotification, MediatR.INotification, 
-    DispatchR.Requests.Notification.INotification;
-
-public sealed class SingleHandler
-    : INotificationHandler<SingleHandlerNotification>,
-        MediatR.INotificationHandler<SingleHandlerNotification>,
-        DispatchR.Requests.Notification.INotificationHandler<SingleHandlerNotification>
-{
-    public ValueTask Handle(SingleHandlerNotification notification, CancellationToken cancellationToken) => default;
-
-    Task MediatR.INotificationHandler<SingleHandlerNotification>.Handle(
-        SingleHandlerNotification notification,
-        CancellationToken cancellationToken
-    ) => Task.CompletedTask;
-}
-
-public sealed record MultiHandlersNotification(Guid Id) : INotification, MediatR.INotification, 
-    DispatchR.Requests.Notification.INotification;
-
-public sealed class MultiHandler0
-    : INotificationHandler<MultiHandlersNotification>,
-        MediatR.INotificationHandler<MultiHandlersNotification>,
-        DispatchR.Requests.Notification.INotificationHandler<MultiHandlersNotification>
-{
-    public ValueTask Handle(MultiHandlersNotification notification, CancellationToken cancellationToken) => default;
-
-    Task MediatR.INotificationHandler<MultiHandlersNotification>.Handle(
-        MultiHandlersNotification notification,
-        CancellationToken cancellationToken
-    ) => Task.CompletedTask;
-}
-
-public sealed class MultiHandler1
-    : INotificationHandler<MultiHandlersNotification>,
-        MediatR.INotificationHandler<MultiHandlersNotification>,
-        DispatchR.Requests.Notification.INotificationHandler<MultiHandlersNotification>
-{
-    public ValueTask Handle(MultiHandlersNotification notification, CancellationToken cancellationToken) => default;
-
-    Task MediatR.INotificationHandler<MultiHandlersNotification>.Handle(
-        MultiHandlersNotification notification,
-        CancellationToken cancellationToken
-    ) => Task.CompletedTask;
-}
-
-public sealed class MultiHandler2
-    : INotificationHandler<MultiHandlersNotification>,
-        MediatR.INotificationHandler<MultiHandlersNotification>,
-        DispatchR.Requests.Notification.INotificationHandler<MultiHandlersNotification>
-{
-    public ValueTask Handle(MultiHandlersNotification notification, CancellationToken cancellationToken) => default;
-
-    Task MediatR.INotificationHandler<MultiHandlersNotification>.Handle(
-        MultiHandlersNotification notification,
-        CancellationToken cancellationToken
-    ) => Task.CompletedTask;
-}
-
-public sealed record MultiHandlersAsyncNotification(Guid Id) : INotification, MediatR.INotification, 
-    DispatchR.Requests.Notification.INotification;
-
-public sealed class MultiHandlerAsync0
-    : INotificationHandler<MultiHandlersAsyncNotification>,
-        MediatR.INotificationHandler<MultiHandlersAsyncNotification>,
-        DispatchR.Requests.Notification.INotificationHandler<MultiHandlersAsyncNotification>
-{
-    public async ValueTask Handle(MultiHandlersAsyncNotification notification, CancellationToken cancellationToken) =>
-        await Task.Yield();
-
-    async Task MediatR.INotificationHandler<MultiHandlersAsyncNotification>.Handle(
-        MultiHandlersAsyncNotification notification,
-        CancellationToken cancellationToken
-    ) => await Task.Yield();
-}
-
-public sealed class MultiHandlerAsync1
-    : INotificationHandler<MultiHandlersAsyncNotification>,
-        MediatR.INotificationHandler<MultiHandlersAsyncNotification>,
-        DispatchR.Requests.Notification.INotificationHandler<MultiHandlersAsyncNotification>
-{
-    public async ValueTask Handle(MultiHandlersAsyncNotification notification, CancellationToken cancellationToken) =>
-        await Task.Yield();
-
-    async Task MediatR.INotificationHandler<MultiHandlersAsyncNotification>.Handle(
-        MultiHandlersAsyncNotification notification,
-        CancellationToken cancellationToken
-    ) => await Task.Yield();
-}
-
-public sealed class MultiHandlerAsync2
-    : INotificationHandler<MultiHandlersAsyncNotification>,
-        MediatR.INotificationHandler<MultiHandlersAsyncNotification>,
-        DispatchR.Requests.Notification.INotificationHandler<MultiHandlersAsyncNotification>
-{
-    public async ValueTask Handle(MultiHandlersAsyncNotification notification, CancellationToken cancellationToken) =>
-        await Task.Yield();
-
-    async Task MediatR.INotificationHandler<MultiHandlersAsyncNotification>.Handle(
-        MultiHandlersAsyncNotification notification,
-        CancellationToken cancellationToken
-    ) => await Task.Yield();
-}
 
 [MemoryDiagnoser]
 [Orderer(SummaryOrderPolicy.FastestToSlowest)]
@@ -120,7 +17,7 @@ public class NotificationBenchmarks
     private DispatchR.Requests.IMediator _dispatchR;
     private Mediator.Mediator _concreteMediator;
     private MediatR.IMediator _mediatr;
-    private SingleHandler _singleHandler;
+    private SingleHandler.SingleHandler _singleHandler;
     private SingleHandlerNotification _singleHandlerNotification;
     private MultiHandler0 _multiHandler0;
     private MultiHandler1 _multiHandler1;
@@ -149,11 +46,11 @@ public class NotificationBenchmarks
         {
             opts.ServiceLifetime = ServiceLifetime.Scoped;
         });
-        services.AddDispatchR(typeof(SingleHandler).Assembly);
+        services.AddDispatchR(typeof(SingleHandler.SingleHandler).Assembly);
         services.AddMediatR(opts =>
         {
             opts.Lifetime = ServiceLifetime.Scoped;
-            opts.RegisterServicesFromAssembly(typeof(SingleHandler).Assembly);
+            opts.RegisterServicesFromAssembly(typeof(SingleHandler.SingleHandler).Assembly);
         });
 
         _serviceProvider = services.BuildServiceProvider();
@@ -165,7 +62,7 @@ public class NotificationBenchmarks
         _concreteMediator = _serviceProvider.GetRequiredService<Mediator.Mediator>();
         _mediatr = _serviceProvider.GetRequiredService<MediatR.IMediator>();
 
-        _singleHandler = _serviceProvider.GetRequiredService<SingleHandler>();
+        _singleHandler = _serviceProvider.GetRequiredService<SingleHandler.SingleHandler>();
         _singleHandlerNotification = new(Guid.NewGuid());
 
         _multiHandler0 = _serviceProvider.GetRequiredService<MultiHandler0>();
