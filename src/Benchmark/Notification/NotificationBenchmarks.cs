@@ -210,7 +210,7 @@ public class NotificationBenchmarks
         };
     }
 
-    [Benchmark(Baseline = true)]
+    [Benchmark]
     public ValueTask Publish_Notification_IMediator()
     {
         return Scenario switch
