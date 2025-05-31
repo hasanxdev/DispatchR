@@ -38,15 +38,15 @@ public sealed class Mediator(IServiceProvider serviceProvider) : IMediator
     {
         var notificationsInDi = serviceProvider
             .GetRequiredService<IEnumerable<INotificationHandler<TNotification>>>();
+        
         var notifications = Unsafe.As<INotificationHandler<TNotification>[]>(notificationsInDi);
-        for (int i = 0; i < notifications.Length; i++)
+        foreach (var notification in notifications)
         {
-            var notification = notifications[i];
             var valueTask = notification.Handle(request, cancellationToken);
             if (valueTask.IsCompletedSuccessfully is false)
             {
                 await valueTask;
-            }   
+            }
         }
     }
 }

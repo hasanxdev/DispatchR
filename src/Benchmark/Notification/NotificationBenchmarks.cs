@@ -188,16 +188,16 @@ public class NotificationBenchmarks
             (_serviceProvider as IDisposable)?.Dispose();
     }
 
-    // [Benchmark]
-    // public Task Publish_Notification_MediatR()
-    // {
-    //     return Scenario switch
-    //     {
-    //         ScenarioType.SingleHandlerSync => _mediatr.Publish(_singleHandlerNotification),
-    //         ScenarioType.MultiHandlersSync => _mediatr.Publish(_multiHandlersNotification),
-    //         ScenarioType.MultiHandlersAsync => _mediatr.Publish(_multiHandlersAsyncNotification),
-    //     };
-    // }
+    [Benchmark]
+    public Task Publish_Notification_MediatR()
+    {
+        return Scenario switch
+        {
+            ScenarioType.SingleHandlerSync => _mediatr.Publish(_singleHandlerNotification),
+            ScenarioType.MultiHandlersSync => _mediatr.Publish(_multiHandlersNotification),
+            ScenarioType.MultiHandlersAsync => _mediatr.Publish(_multiHandlersAsyncNotification),
+        };
+    }
     
     [Benchmark]
     public ValueTask Publish_Notification_DispatchR()
@@ -221,40 +221,40 @@ public class NotificationBenchmarks
         };
     }
 
-    // [Benchmark]
-    // public ValueTask Publish_Notification_Mediator()
-    // {
-    //     return Scenario switch
-    //     {
-    //         ScenarioType.SingleHandlerSync => _concreteMediator.Publish(_singleHandlerNotification),
-    //         ScenarioType.MultiHandlersSync => _concreteMediator.Publish(_multiHandlersNotification),
-    //         ScenarioType.MultiHandlersAsync => _concreteMediator.Publish(_multiHandlersAsyncNotification),
-    //     };
-    // }
+    [Benchmark]
+    public ValueTask Publish_Notification_Mediator()
+    {
+        return Scenario switch
+        {
+            ScenarioType.SingleHandlerSync => _concreteMediator.Publish(_singleHandlerNotification),
+            ScenarioType.MultiHandlersSync => _concreteMediator.Publish(_multiHandlersNotification),
+            ScenarioType.MultiHandlersAsync => _concreteMediator.Publish(_multiHandlersAsyncNotification),
+        };
+    }
 
-    // [Benchmark(Baseline = true)]
-    // public ValueTask Publish_Notification_Baseline()
-    // {
-    //     switch (Scenario)
-    //     {
-    //         case ScenarioType.SingleHandlerSync:
-    //             return _singleHandler.Handle(_singleHandlerNotification, default);
-    //         case ScenarioType.MultiHandlersSync:
-    //             _multiHandler0.Handle(_multiHandlersNotification, default).GetAwaiter().GetResult();
-    //             _multiHandler1.Handle(_multiHandlersNotification, default).GetAwaiter().GetResult();
-    //             _multiHandler2.Handle(_multiHandlersNotification, default).GetAwaiter().GetResult();
-    //             return default;
-    //         case ScenarioType.MultiHandlersAsync:
-    //             return AwaitMultipleHandlersAsync();
-    //     }
-    //
-    //     return default;
-    //
-    //     async ValueTask AwaitMultipleHandlersAsync()
-    //     {
-    //         await _multiHandlerAsync0.Handle(_multiHandlersAsyncNotification, default);
-    //         await _multiHandlerAsync1.Handle(_multiHandlersAsyncNotification, default);
-    //         await _multiHandlerAsync2.Handle(_multiHandlersAsyncNotification, default);
-    //     }
-    // }
+    [Benchmark(Baseline = true)]
+    public ValueTask Publish_Notification_Baseline()
+    {
+        switch (Scenario)
+        {
+            case ScenarioType.SingleHandlerSync:
+                return _singleHandler.Handle(_singleHandlerNotification, default);
+            case ScenarioType.MultiHandlersSync:
+                _multiHandler0.Handle(_multiHandlersNotification, default).GetAwaiter().GetResult();
+                _multiHandler1.Handle(_multiHandlersNotification, default).GetAwaiter().GetResult();
+                _multiHandler2.Handle(_multiHandlersNotification, default).GetAwaiter().GetResult();
+                return default;
+            case ScenarioType.MultiHandlersAsync:
+                return AwaitMultipleHandlersAsync();
+        }
+    
+        return default;
+    
+        async ValueTask AwaitMultipleHandlersAsync()
+        {
+            await _multiHandlerAsync0.Handle(_multiHandlersAsyncNotification, default);
+            await _multiHandlerAsync1.Handle(_multiHandlersAsyncNotification, default);
+            await _multiHandlerAsync2.Handle(_multiHandlersAsyncNotification, default);
+        }
+    }
 }
