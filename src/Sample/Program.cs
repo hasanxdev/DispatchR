@@ -3,6 +3,7 @@ using DispatchR;
 using DispatchR.Requests;
 using Sample;
 using Sample.MediatR.Notification;
+using Scalar.AspNetCore;
 using DispatchRSample = Sample.DispatchR.SendRequest;
 using DispatchRStreamSample = Sample.DispatchR.StreamRequest;
 using DispatchRNotificationSample = Sample.DispatchR.Notification;
@@ -32,6 +33,7 @@ var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
+    app.MapScalarApiReference();
 }
 
 app.UseHttpsRedirection();
