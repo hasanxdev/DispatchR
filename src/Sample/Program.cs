@@ -1,8 +1,6 @@
 using System.Reflection;
 using DispatchR;
-using DispatchR.Requests;
-using Sample;
-using Sample.MediatR.Notification;
+using Scalar.AspNetCore;
 using DispatchRSample = Sample.DispatchR.SendRequest;
 using DispatchRStreamSample = Sample.DispatchR.StreamRequest;
 using DispatchRNotificationSample = Sample.DispatchR.Notification;
@@ -12,10 +10,16 @@ using MediatRNotificationSample = Sample.MediatR.Notification;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
+
+// HealthChecks
+builder.Services.AddHealthChecks();
+
 builder.Services.AddOpenApi();
 
+
+
+
+// Configure MediatR
 builder.Services.AddMediatR(cfg =>
 {
     cfg.Lifetime = ServiceLifetime.Scoped;
@@ -25,16 +29,34 @@ builder.Services.AddTransient<MediatR.IPipelineBehavior<MediatRSample.Ping, int>
 builder.Services.AddTransient<MediatR.IPipelineBehavior<MediatRSample.Ping, int>, MediatRSample.SecondPipelineBehavior>();
 builder.Services.AddTransient<MediatR.IStreamPipelineBehavior<MediatRStreamSample.CounterStreamRequest, string>, MediatRStreamSample.CounterPipelineStreamHandler>();
 
+// Configure DispatchR
 builder.Services.AddDispatchR(typeof(DispatchRSample.Ping).Assembly);
 
 var app = builder.Build();
 
+// Configure the HTTP request pipeline
 if (app.Environment.IsDevelopment())
 {
+    app.UseDeveloperExceptionPage();
     app.MapOpenApi();
+    app.MapScalarApiReference();
 }
 
 app.UseHttpsRedirection();
+
+// Add global exception handling
+app.UseExceptionHandler(errorApp =>
+{
+    errorApp.Run(async context =>
+    {
+        context.Response.StatusCode = 500;
+        context.Response.ContentType = "application/json";
+        await context.Response.WriteAsJsonAsync(new { error = "An unexpected error occurred" });
+    });
+});
+
+// Add health check endpoint
+app.MapHealthChecks("/health");
 
 var summaries = new[]
 {
