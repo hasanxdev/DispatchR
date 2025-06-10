@@ -1,10 +1,10 @@
-﻿using System.Reflection;
-using System.Runtime.CompilerServices;
-using DispatchR.Requests;
+﻿using DispatchR.Requests;
 using DispatchR.Requests.Notification;
 using DispatchR.Requests.Send;
 using DispatchR.Requests.Stream;
 using Microsoft.Extensions.DependencyInjection;
+using System.Reflection;
+using System.Runtime.CompilerServices;
 
 namespace DispatchR;
 
@@ -41,8 +41,8 @@ public static class DispatchRServiceCollection
         {
             RegisterNotification(services, allTypes, syncNotificationHandlerType);
         }
-        
-        RegisterHandlers(services, allTypes, requestHandlerType, pipelineBehaviorType, 
+
+        RegisterHandlers(services, allTypes, requestHandlerType, pipelineBehaviorType,
             streamRequestHandlerType, streamPipelineBehaviorType, withPipelines);
     }
 
@@ -65,7 +65,7 @@ public static class DispatchRServiceCollection
                 return new[] { pipelineBehaviorType, streamPipelineBehaviorType }
                     .Contains(@interface.GetGenericTypeDefinition());
             }).ToList();
-        
+
         foreach (var handler in allHandlers)
         {
             object key = handler.GUID;
@@ -102,7 +102,15 @@ public static class DispatchRServiceCollection
 
                 foreach (var pipeline in pipelines)
                 {
-                    services.AddKeyedScoped(typeof(IRequestHandler), key, pipeline);
+                    if (pipeline.IsGenericType)
+                    {
+                        var closedGenericType = pipeline.MakeGenericType(handlerInterface.GenericTypeArguments[0], handlerInterface.GenericTypeArguments[1]);
+                        services.AddKeyedScoped(typeof(IRequestHandler), key, closedGenericType);
+                    }
+                    else
+                    {
+                        services.AddKeyedScoped(typeof(IRequestHandler), key, pipeline);
+                    }
                 }
             }
 
@@ -110,7 +118,7 @@ public static class DispatchRServiceCollection
             {
                 var pipelinesWithHandler = Unsafe
                     .As<IRequestHandler[]>(sp.GetKeyedServices<IRequestHandler>(key));
-                
+
                 IRequestHandler lastPipeline = pipelinesWithHandler[0];
                 for (int i = 1; i < pipelinesWithHandler.Length; i++)
                 {

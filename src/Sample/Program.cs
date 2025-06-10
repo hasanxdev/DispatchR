@@ -1,15 +1,11 @@
-using System.Reflection;
 using DispatchR;
-using DispatchR.Requests;
-using Sample;
-using Sample.MediatR.Notification;
 using Scalar.AspNetCore;
+using DispatchRNotificationSample = Sample.DispatchR.Notification;
 using DispatchRSample = Sample.DispatchR.SendRequest;
 using DispatchRStreamSample = Sample.DispatchR.StreamRequest;
-using DispatchRNotificationSample = Sample.DispatchR.Notification;
+using MediatRNotificationSample = Sample.MediatR.Notification;
 using MediatRSample = Sample.MediatR.SendRequest;
 using MediatRStreamSample = Sample.MediatR.StreamRequest;
-using MediatRNotificationSample = Sample.MediatR.Notification;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -22,6 +18,7 @@ builder.Services.AddMediatR(cfg =>
     cfg.Lifetime = ServiceLifetime.Scoped;
     cfg.RegisterServicesFromAssemblies(typeof(MediatRSample.Ping).Assembly);
 });
+builder.Services.AddTransient(typeof(MediatR.IPipelineBehavior<,>), typeof(MediatRSample.GenericPipelineBehavior<,>));
 builder.Services.AddTransient<MediatR.IPipelineBehavior<MediatRSample.Ping, int>, MediatRSample.FirstPipelineBehavior>();
 builder.Services.AddTransient<MediatR.IPipelineBehavior<MediatRSample.Ping, int>, MediatRSample.SecondPipelineBehavior>();
 builder.Services.AddTransient<MediatR.IStreamPipelineBehavior<MediatRStreamSample.CounterStreamRequest, string>, MediatRStreamSample.CounterPipelineStreamHandler>();
@@ -57,11 +54,11 @@ app.MapGet("/weatherforecast", () =>
     })
     .WithName("GetWeatherForecast");
 
-app.MapGet("/Send/MediatR", (MediatR.IMediator mediatR, CancellationToken cancellationToken) 
+app.MapGet("/Send/MediatR", (MediatR.IMediator mediatR, CancellationToken cancellationToken)
         => mediatR.Send(new MediatRSample.Ping(), cancellationToken))
     .WithName("SendInMediatRWithPipeline");
 
-app.MapGet("/Send/DispatchR", (DispatchR.Requests.IMediator dispatchR, CancellationToken cancellationToken) 
+app.MapGet("/Send/DispatchR", (DispatchR.Requests.IMediator dispatchR, CancellationToken cancellationToken)
         => dispatchR.Send(new DispatchRSample.Ping(), cancellationToken))
     .WithName("SendInDispatchRWithPipeline");
 
@@ -79,7 +76,7 @@ app.MapGet("/Stream/MediatR", async (MediatR.IMediator mediatR, ILogger<Program>
 
         logger.LogInformation($"stream count in MediatR: {count}");
     }
-    
+
     return "It works";
 });
 
@@ -97,7 +94,7 @@ app.MapGet("/Stream/DispatchR", async (DispatchR.Requests.IMediator dispatchR, I
 
         logger.LogInformation($"stream count in DispatchR: {count}");
     }
-    
+
     return "It works";
 });
 
