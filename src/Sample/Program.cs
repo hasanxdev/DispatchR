@@ -24,7 +24,6 @@ builder.Services.AddTransient<MediatR.IPipelineBehavior<MediatRSample.Ping, int>
 builder.Services.AddTransient<MediatR.IStreamPipelineBehavior<MediatRStreamSample.CounterStreamRequest, string>, MediatRStreamSample.CounterPipelineStreamHandler>();
 
 builder.Services.AddDispatchR(typeof(DispatchRSample.Ping).Assembly);
-
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())

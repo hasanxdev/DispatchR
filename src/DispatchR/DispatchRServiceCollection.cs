@@ -104,7 +104,31 @@ public static class DispatchRServiceCollection
                 {
                     if (pipeline.IsGenericType)
                     {
-                        var closedGenericType = pipeline.MakeGenericType(handlerInterface.GenericTypeArguments[0], handlerInterface.GenericTypeArguments[1]);
+                        var genericHandlerResponseType = pipeline.GetInterfaces().First(inter =>
+                            inter.IsGenericType &&
+                            inter.GetGenericTypeDefinition() == behaviorType).GenericTypeArguments[1];
+                        
+                        var genericHandlerResponseIsAwaitable = IsAwaitable(genericHandlerResponseType);
+                        var handlerResponseTypeIsAwaitable = IsAwaitable(handlerInterface.GenericTypeArguments[1]);
+                        if (genericHandlerResponseIsAwaitable ^ handlerResponseTypeIsAwaitable)
+                        {
+                            continue;
+                        }
+                        
+                        var responseTypeArg = handlerInterface.GenericTypeArguments[1];
+                        if (genericHandlerResponseIsAwaitable && handlerResponseTypeIsAwaitable)
+                        {
+                            if (genericHandlerResponseType.GetGenericTypeDefinition() !=
+                                handlerInterface.GenericTypeArguments[1].GetGenericTypeDefinition())
+                            {
+                                continue;
+                            }
+                            
+                            // register async generic pipelines
+                            responseTypeArg = responseTypeArg.GenericTypeArguments[0];
+                        }
+                        
+                        var closedGenericType = pipeline.MakeGenericType(handlerInterface.GenericTypeArguments[0], responseTypeArg);
                         services.AddKeyedScoped(typeof(IRequestHandler), key, closedGenericType);
                     }
                     else
@@ -164,5 +188,19 @@ public static class DispatchRServiceCollection
                 services.AddScoped(typeof(INotificationHandler<>).MakeGenericType(notification.Key), types);
             }
         }
+    }
+    
+    static bool IsAwaitable(Type type)
+    {
+        if (type == typeof(Task) || type == typeof(ValueTask))
+            return true;
+
+        if (type.IsGenericType)
+        {
+            var genericDef = type.GetGenericTypeDefinition();
+            return genericDef == typeof(Task<>) || genericDef == typeof(ValueTask<>) || genericDef == typeof(IAsyncEnumerable<>);
+        }
+
+        return false;
     }
 }
