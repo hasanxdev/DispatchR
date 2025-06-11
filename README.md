@@ -104,6 +104,23 @@ public sealed class LoggingBehaviorDispatchR : IPipelineBehavior<PingDispatchR, 
 }
 ```
 
+#### Generic pipeline behavior DispatchR
+1. For every kind of return type — `Task`, `ValueTask`, or synchronous methods — you need to write a generic pipeline behavior. However, you don't need a separate pipeline for each request. As shown in the code below, this is a GenericPipeline for requests that return a `ValueTask`.
+```csharp
+public class GenericPipelineBehavior<TRequest, TResponse>() : IPipelineBehavior<TRequest, ValueTask<TResponse>>
+    where TRequest : class, IRequest<TRequest, ValueTask<TResponse>>, new()
+{
+    public required IRequestHandler<TRequest, ValueTask<TResponse>> NextPipeline { get; set; }
+    
+    public ValueTask<TResponse> Handle(TRequest request, CancellationToken cancellationToken)
+    {
+        // You can add custom logic here, like logging or validation
+        // This pipeline behavior can be used for any request type
+        return NextPipeline.Handle(request, cancellationToken);
+    }
+}
+```
+
 ## Summary
 
 - **DispatchR** lets the request itself define the return type.
@@ -177,6 +194,23 @@ public sealed class CounterPipelineStreamHandler : IStreamPipelineBehavior<Count
     public required IStreamRequestHandler<CounterStreamRequestDispatchR, string> NextPipeline { get; set; }
     
     public async IAsyncEnumerable<string> Handle(CounterStreamRequestDispatchR request, [EnumeratorCancellation] CancellationToken cancellationToken)
+    {
+        await foreach (var response in NextPipeline.Handle(request, cancellationToken).ConfigureAwait(false))
+        {
+            yield return response;
+        }
+    }
+}
+```
+
+#### Generic stream pipeline behavior DispatchR
+```csharp
+public class GenericStreamPipelineBehavior<TRequest, TResponse>() : IStreamPipelineBehavior<TRequest, TResponse>
+    where TRequest : class, IStreamRequest<TRequest, TResponse>, new()
+{
+    public IStreamRequestHandler<TRequest, TResponse> NextPipeline { get; set; }
+    
+    public async IAsyncEnumerable<TResponse> Handle(TRequest request, CancellationToken cancellationToken)
     {
         await foreach (var response in NextPipeline.Handle(request, cancellationToken).ConfigureAwait(false))
         {
