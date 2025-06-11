@@ -104,7 +104,7 @@ public sealed class LoggingBehaviorDispatchR : IPipelineBehavior<PingDispatchR, 
 }
 ```
 
-#### Generic Pipeline Behavior
+#### Generic pipeline behavior DispatchR
 1. For every kind of return type — `Task`, `ValueTask`, or synchronous methods — you need to write a generic pipeline behavior. However, you don't need a separate pipeline for each request. As shown in the code below, this is a GenericPipeline for requests that return a `ValueTask`.
 ```csharp
 public class GenericPipelineBehavior<TRequest, TResponse>() : IPipelineBehavior<TRequest, ValueTask<TResponse>>
@@ -203,7 +203,7 @@ public sealed class CounterPipelineStreamHandler : IStreamPipelineBehavior<Count
 }
 ```
 
-#### Generic Stream Pipeline Behavior
+#### Generic stream pipeline behavior DispatchR
 ```csharp
 public class GenericStreamPipelineBehavior<TRequest, TResponse>() : IStreamPipelineBehavior<TRequest, TResponse>
     where TRequest : class, IStreamRequest<TRequest, TResponse>, new()
