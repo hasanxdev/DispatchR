@@ -2,4 +2,4 @@
 
 public interface IStreamRequest;
 
-public interface IStreamRequest<TRequest, TResponse> : IStreamRequest where TRequest : class, new();
+public interface IStreamRequest<TRequest, TResponse> : IStreamRequest where TRequest : class;
