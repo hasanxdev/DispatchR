@@ -4,6 +4,7 @@ using Benchmark.Notification.SingleHandler;
 using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Order;
 using DispatchR;
+using DispatchR.Extensions;
 
 namespace Benchmark.Notification;
 

@@ -1,4 +1,4 @@
-using DispatchR;
+using DispatchR.Extensions;
 using Scalar.AspNetCore;
 using DispatchRNotificationSample = Sample.DispatchR.Notification;
 using DispatchRSample = Sample.DispatchR.SendRequest;
