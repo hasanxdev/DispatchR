@@ -4,7 +4,7 @@ using DispatchR.Requests.Send;
 namespace DispatchR.Requests.Stream;
 
 public interface IStreamPipelineBehavior<TRequest, TResponse> : IStreamRequestHandler<TRequest, TResponse> 
-    where TRequest : class, IStreamRequest<TRequest, TResponse>, new()
+    where TRequest : class, IStreamRequest<TRequest, TResponse>
 {
     public IStreamRequestHandler<TRequest, TResponse> NextPipeline { get; set; }
 

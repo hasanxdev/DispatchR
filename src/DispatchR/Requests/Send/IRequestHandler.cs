@@ -6,7 +6,7 @@ public interface IRequestHandler
     {
     }
 }
-public interface IRequestHandler<TRequest, TResponse> : IRequestHandler where TRequest : class, IRequest, new()
+public interface IRequestHandler<TRequest, TResponse> : IRequestHandler where TRequest : class, IRequest
 {
     TResponse Handle(TRequest request, CancellationToken cancellationToken);
 }
