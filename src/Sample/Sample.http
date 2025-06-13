@@ -1,6 +1,43 @@
 @Sample_HostAddress = http://localhost:5070
 
+# Weather Forecast
 GET {{Sample_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
+
+# Send in MediatR with Pipeline
+GET {{Sample_HostAddress}}/Send/MediatR
+Accept: application/json
+
+###
+
+# Send in DispatchR with Pipeline
+GET {{Sample_HostAddress}}/Send/DispatchR
+Accept: application/json
+
+###
+
+# Stream in MediatR
+GET {{Sample_HostAddress}}/Stream/MediatR
+Accept: application/json
+
+###
+
+# Stream in DispatchR
+GET {{Sample_HostAddress}}/Stream/DispatchR
+Accept: application/json
+
+###
+
+# Notification in MediatR
+GET {{Sample_HostAddress}}/Notification/MediatR
+Accept: application/json
+
+###
+
+# Notification in DispatchR
+GET {{Sample_HostAddress}}/Notification/DispatchR
 Accept: application/json
 
 ###
