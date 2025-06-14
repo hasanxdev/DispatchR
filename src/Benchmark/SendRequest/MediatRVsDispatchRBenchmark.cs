@@ -1,6 +1,7 @@
 ﻿using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Order;
 using DispatchR;
+using DispatchR.Extensions;
 using IMediator = MediatR.IMediator;
 
 namespace Benchmark.SendRequest;
