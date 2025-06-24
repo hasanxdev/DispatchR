@@ -64,7 +64,7 @@ public static class ServiceCollectionExtensions
         }
 
         ServiceRegistrator.RegisterHandlers(services, allTypes, requestHandlerType, pipelineBehaviorType,
-            streamRequestHandlerType, streamPipelineBehaviorType, configurationOptions.RegisterPipelines);
+            streamRequestHandlerType, streamPipelineBehaviorType, configurationOptions.RegisterPipelines, configurationOptions.PipelineOrder);
 
         return services;
     }
