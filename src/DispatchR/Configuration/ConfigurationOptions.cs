@@ -7,5 +7,6 @@ namespace DispatchR.Configuration
         public bool RegisterPipelines { get; set; } = true;
         public bool RegisterNotifications { get; set; } = true;
         public List<Assembly> Assemblies { get; } = new();
+        public List<Type>? PipelineOrder { get; set; }
     }
 }

@@ -332,7 +332,24 @@ It's simple! Just use the following code:
 ```csharp
 builder.Services.AddDispatchR(typeof(MyCommand).Assembly, withPipelines: true, withNotifications: true);
 ```
-This code will automatically register all pipelines by default. If you need to register them in a specific order, you can either add them manually or write your own reflection logic:
+This code will automatically register all pipelines by default.
+If you need to register them in a specific order, you could pass the Order via ConfigurationOptions like in the sample below:
+```csharp
+builder.Services.AddDispatchR(options =>
+{
+    options.Assemblies.Add(typeof(DispatchRSample.Ping).Assembly);
+    options.RegisterPipelines = true;
+    options.RegisterNotifications = true;
+    options.PipelineOrder =
+    [
+        typeof(DispatchRSample.FirstPipelineBehavior),
+        typeof(DispatchRSample.SecondPipelineBehavior),
+        typeof(DispatchRSample.GenericPipelineBehavior<,>)
+    ];
+});
+```
+
+If you need additional customization, you can either add them manually or write your own reflection logic:
 ```csharp
 builder.Services.AddDispatchR(typeof(MyCommand).Assembly, withPipelines: false, withNotifications: false);
 builder.Services.AddScoped<IPipelineBehavior<MyCommand, int>, PipelineBehavior>();

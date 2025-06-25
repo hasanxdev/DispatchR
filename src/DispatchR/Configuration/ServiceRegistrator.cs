@@ -9,7 +9,7 @@ namespace DispatchR.Configuration
     {
         public static void RegisterHandlers(IServiceCollection services, List<Type> allTypes,
             Type requestHandlerType, Type pipelineBehaviorType, Type streamRequestHandlerType,
-            Type streamPipelineBehaviorType, bool withPipelines)
+            Type streamPipelineBehaviorType, bool withPipelines, List<Type>? pipelineOrder = null)
         {
             var allHandlers = allTypes
                 .Where(p =>
@@ -60,6 +60,19 @@ namespace DispatchR.Configuration
                                        ?.GetInterfaces().First().GetGenericTypeDefinition() ==
                                    handlerInterface.GetGenericTypeDefinition();
                         }).ToList();
+
+                    // Sort pipelines by the specified order passed via ConfigurationOptions
+                    if (pipelineOrder is { Count: > 0 })
+                    {
+                        pipelines = pipelines
+                            .OrderBy(p =>
+                            {
+                                var idx = pipelineOrder.IndexOf(p);
+                                return idx == -1 ? int.MaxValue : idx;
+                            })
+                            .ToList();
+                        pipelines.Reverse();
+                    }
 
                     foreach (var pipeline in pipelines)
                     {
