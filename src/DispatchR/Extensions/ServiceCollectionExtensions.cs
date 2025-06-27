@@ -40,10 +40,12 @@ public static class ServiceCollectionExtensions
         var streamPipelineBehaviorType = typeof(IStreamPipelineBehavior<,>);
         var syncNotificationHandlerType = typeof(INotificationHandler<>);
 
-        var allTypes = configurationOptions.Assemblies.SelectMany(x => x.GetTypes()).Distinct()
-            .Where(p =>
+        var allTypes = configurationOptions.Assemblies.SelectMany(x => x.GetTypes())
+            .Distinct()
+            .Where(type => type is { IsClass: true, IsAbstract: false })
+            .Where(type =>
             {
-                var interfaces = p.GetInterfaces();
+                var interfaces = type.GetInterfaces();
                 return interfaces.Length >= 1 &&
                        interfaces
                            .Where(i => i.IsGenericType)
