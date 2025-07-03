@@ -8,5 +8,6 @@ namespace DispatchR.Configuration
         public bool RegisterNotifications { get; set; } = true;
         public List<Assembly> Assemblies { get; } = new();
         public List<Type>? PipelineOrder { get; set; }
+        public List<Type>? OptionalHandlerFilter { get; set; }
     }
 }
