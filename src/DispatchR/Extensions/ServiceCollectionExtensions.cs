@@ -44,24 +44,25 @@ public static class ServiceCollectionExtensions
             .Where(p =>
             {
                 var interfaces = p.GetInterfaces();
-                var implementsDispatchRInterface = interfaces.Length >= 1 &&
-                                                   interfaces
-                                                       .Where(i => i.IsGenericType)
-                                                       .Select(i => i.GetGenericTypeDefinition())
-                                                       .Any(i => new[]
-                                                       {
-                                                           requestHandlerType,
-                                                           pipelineBehaviorType,
-                                                           streamRequestHandlerType,
-                                                           streamPipelineBehaviorType,
-                                                           syncNotificationHandlerType
-                                                       }.Contains(i));
+                return interfaces.Length >= 1 &&
+                       interfaces
+                           .Where(i => i.IsGenericType)
+                           .Select(i => i.GetGenericTypeDefinition())
+                           .Any(i =>
+                           {
+                               if (i == requestHandlerType)
+                               {
+                                   return configurationOptions.IsHandlerIncluded(p);
+                               }
 
-                if (configurationOptions.OptionalHandlerFilter is null) 
-                    return implementsDispatchRInterface;
-                
-                var result = implementsDispatchRInterface && configurationOptions.OptionalHandlerFilter.Contains(p);
-                return result;
+                               return new[]
+                               {
+                                   pipelineBehaviorType,
+                                   streamRequestHandlerType,
+                                   streamPipelineBehaviorType,
+                                   syncNotificationHandlerType
+                               }.Contains(i);
+                           });
             }).ToList();
 
         if (configurationOptions.RegisterNotifications)
