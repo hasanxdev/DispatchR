@@ -19,7 +19,7 @@ namespace DispatchR.Configuration
         /// </summary>
         public List<Type>? ExcludeHandlers  { get; set; }
 
-        public bool IsHandlerIncluded(Type handlerType)
+        internal bool IsHandlerIncluded(Type handlerType)
         {
             var included = IncludeHandlers?.Contains(handlerType) ?? true;
             var excluded = ExcludeHandlers?.Contains(handlerType) ?? false;
