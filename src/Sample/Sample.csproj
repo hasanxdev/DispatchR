@@ -2,16 +2,16 @@
 
     <PropertyGroup>
         <TargetFramework>net9.0</TargetFramework>
-        <Nullable>enable</Nullable>
+        <!--<TargetFramework>net8.0</TargetFramework> --><!--Uncomment if you want to test .NET 8.0. Be sure to comment out other .NET versions-->
+		<Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
     </PropertyGroup>
-
-    <ItemGroup>
-        <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.0"/>
-        <PackageReference Include="MediatR" Version="12.5.0" />
-        <PackageReference Include="Scalar.AspNetCore" Version="2.4.7" />
-    </ItemGroup>
-
+	<ItemGroup>
+		<PackageReference Include="MediatR" Version="12.5.0" />
+	</ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
+	</ItemGroup>
     <ItemGroup>
       <ProjectReference Include="..\DispatchR\DispatchR.csproj" />
     </ItemGroup>
