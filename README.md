@@ -4,7 +4,7 @@
 [![NuGet](https://img.shields.io/nuget/dt/DispatchR.Mediator.svg)](https://www.nuget.org/packages/DispatchR.Mediator)
 [![NuGet](https://img.shields.io/nuget/vpre/DispatchR.Mediator.svg)](https://www.nuget.org/packages/DispatchR.Mediator)
 
-### A High-Performance Mediator Implementation for .NET :trollface: 
+### A High-Performance Mediator Implementation for .NET :trollface:
 ** *Minimal memory footprint. Blazing-fast execution.* **
 
 > [!NOTE]
@@ -17,18 +17,19 @@
 - Allocates nothing on the heap — ideal for high-throughput scenarios
 - Outperforms existing solutions in most real-world benchmarks
 - Seamlessly compatible with MediatR — migrate with minimal effort
+- Include or exclude a set of handlers from an assembly — ideal for use with Aspire
 - Currently supports
-  1. Simple Request:
-     1. `IRequest<TRquest, TResponse>`
-     2. `IRequestHandler<TRequest, TResponse>`
-     3. `IPipelineBehavior<TRequest, TResponse>`
-  2. Stream Request:
-     1. `IStreamRequest<TRquest, TResponse>`
-     2. `IStreamRequestHandler<TRequest, TResponse>`
-     3. `IStreamPipelineBehavior<TRequest, TResponse>`
-  3. Notifications:
-     1. `INotification`
-     2. `INotificationHandler<TRequestEvent>`
+    1. Simple Request:
+        1. `IRequest<TRquest, TResponse>`
+        2. `IRequestHandler<TRequest, TResponse>`
+        3. `IPipelineBehavior<TRequest, TResponse>`
+    2. Stream Request:
+        1. `IStreamRequest<TRquest, TResponse>`
+        2. `IStreamRequestHandler<TRequest, TResponse>`
+        3. `IStreamPipelineBehavior<TRequest, TResponse>`
+    3. Notifications:
+        1. `INotification`
+        2. `INotificationHandler<TRequestEvent>`
 > :bulb: **Tip:** *If you're looking for a mediator with the raw performance of hand-written code, DispatchR is built for you.*
 
 # Syntax Comparison: DispatchR vs MediatR
@@ -44,8 +45,8 @@ public sealed class PingMediatR : IRequest<int> { }
 
 ### DispatchR
 1. Sending `TRequest` to `IRequest`
-2. Precise selection of output for both `async` and `sync` handlers 
-   1. Ability to choose between `Task` and `ValueTask`
+2. Precise selection of output for both `async` and `sync` handlers
+    1. Ability to choose between `Task` and `ValueTask`
 
 ```csharp
 public sealed class PingDispatchR : IRequest<PingDispatchR, ValueTask<int>> { } 
@@ -108,7 +109,7 @@ public sealed class LoggingBehaviorDispatchR : IPipelineBehavior<PingDispatchR, 
 1. For every kind of return type — `Task`, `ValueTask`, or synchronous methods — you need to write a generic pipeline behavior. However, you don't need a separate pipeline for each request. As shown in the code below, this is a GenericPipeline for requests that return a `ValueTask`.
 ```csharp
 public class GenericPipelineBehavior<TRequest, TResponse>() : IPipelineBehavior<TRequest, ValueTask<TResponse>>
-    where TRequest : class, IRequest<TRequest, ValueTask<TResponse>>, new()
+    where TRequest : class, IRequest<TRequest, ValueTask<TResponse>>
 {
     public required IRequestHandler<TRequest, ValueTask<TResponse>> NextPipeline { get; set; }
     
@@ -206,7 +207,7 @@ public sealed class CounterPipelineStreamHandler : IStreamPipelineBehavior<Count
 #### Generic stream pipeline behavior DispatchR
 ```csharp
 public class GenericStreamPipelineBehavior<TRequest, TResponse>() : IStreamPipelineBehavior<TRequest, TResponse>
-    where TRequest : class, IStreamRequest<TRequest, TResponse>, new()
+    where TRequest : class, IStreamRequest<TRequest, TResponse>
 {
     public IStreamRequestHandler<TRequest, TResponse> NextPipeline { get; set; }
     
@@ -261,7 +262,7 @@ public sealed class EventHandler(ILogger<Event> logger) : INotificationHandler<E
 
 ```csharp
 public TResponse Send<TRequest, TResponse>(IRequest<TRequest, TResponse> request,
-    CancellationToken cancellationToken) where TRequest : class, IRequest, new()
+    CancellationToken cancellationToken) where TRequest : class, IRequest
 {
     return serviceProvider
         .GetRequiredService<IRequestHandler<TRequest, TResponse>>()
@@ -273,7 +274,7 @@ public TResponse Send<TRequest, TResponse>(IRequest<TRequest, TResponse> request
 
 ```csharp
 public IAsyncEnumerable<TResponse> CreateStream<TRequest, TResponse>(IStreamRequest<TRequest, TResponse> request, 
-        CancellationToken cancellationToken) where TRequest : class, IStreamRequest, new()
+        CancellationToken cancellationToken) where TRequest : class, IStreamRequest
 {
     return serviceProvider.GetRequiredService<IStreamRequestHandler<TRequest, TResponse>>()
         .Handle(Unsafe.As<TRequest>(request), cancellationToken);
@@ -301,9 +302,9 @@ public async ValueTask Publish<TNotification>(TNotification request, Cancellatio
 ```
 
 But the real magic happens behind the scenes when DI resolves the handler dependency:
-> 💡 __Tips:__ 
+> 💡 __Tips:__
 > 1. *We cache the handler using DI, so in scoped scenarios, the object is constructed only once and reused afterward.*
-> 
+>
 > 2. *In terms of Dependency Injection (DI), everything in Requests is an IRequestHandler, it's just the keys that differ.
      When you request a specific key, a set of 1+N objects is returned: the first one is the actual handler, and the rest are the pipeline behaviors.*
 
@@ -333,7 +334,10 @@ It's simple! Just use the following code:
 builder.Services.AddDispatchR(typeof(MyCommand).Assembly, withPipelines: true, withNotifications: true);
 ```
 This code will automatically register all pipelines by default.
-If you need to register them in a specific order, you could pass the Order via ConfigurationOptions like in the sample below:
+If you need to register them in a specific order, you can pass the order via ConfigurationOptions, as shown in the example below.
+<br>
+Additionally, you can include or exclude specific handlers from an assembly — which is especially useful when working with Aspire.
+You can also check the Samples section to see the Aspire-specific example.
 ```csharp
 builder.Services.AddDispatchR(options =>
 {
@@ -346,6 +350,8 @@ builder.Services.AddDispatchR(options =>
         typeof(DispatchRSample.SecondPipelineBehavior),
         typeof(DispatchRSample.GenericPipelineBehavior<,>)
     ];
+    options.IncludeHandlers = [];
+    options.ExcludeHandlers = [];
 });
 ```
 
@@ -390,9 +396,9 @@ Version 3 of Mediator Source Generator was excluded due to significantly lower p
 
 ## ✨ Contribute & Help Grow This Package! ✨
 We welcome contributions to make this package even better! ❤️
- - Found a bug? → Open an issue
- - Have an idea? → Suggest a feature
- - Want to code? → Submit a PR
+- Found a bug? → Open an issue
+- Have an idea? → Suggest a feature
+- Want to code? → Submit a PR
 
 ## Star History
 <a href="https://www.star-history.com/#hasanxdev/DispatchR&Timeline">

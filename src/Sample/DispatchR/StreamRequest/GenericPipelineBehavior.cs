@@ -5,7 +5,7 @@ namespace Sample.DispatchR.StreamRequest;
 
 public class GenericPipelineBehavior<TRequest, TResponse>(ILogger<GenericPipelineBehavior<TRequest, TResponse>> logger)
     : IStreamPipelineBehavior<TRequest, TResponse>
-    where TRequest : class, IStreamRequest<TRequest, TResponse>, new()
+    where TRequest : class, IStreamRequest<TRequest, TResponse>
 {
     public async IAsyncEnumerable<TResponse> Handle(TRequest request, CancellationToken cancellationToken)
     {
