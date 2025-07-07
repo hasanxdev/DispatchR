@@ -34,6 +34,8 @@ builder.Services.AddDispatchR(options =>
         typeof(DispatchRSample.SecondPipelineBehavior),
         typeof(DispatchRSample.GenericPipelineBehavior<,>)
     ];
+    options.IncludeHandlers = [];
+    options.ExcludeHandlers = [];
 });
 
 var app = builder.Build();
