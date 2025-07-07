@@ -1,0 +1,2 @@
+GET http://localhost:5074/pong/
+Accept: application/json

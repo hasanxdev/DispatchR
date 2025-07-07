@@ -48,14 +48,21 @@ public static class ServiceCollectionExtensions
                        interfaces
                            .Where(i => i.IsGenericType)
                            .Select(i => i.GetGenericTypeDefinition())
-                           .Any(i => new[]
+                           .Any(i =>
                            {
-                               requestHandlerType,
-                               pipelineBehaviorType,
-                               streamRequestHandlerType,
-                               streamPipelineBehaviorType,
-                               syncNotificationHandlerType
-                           }.Contains(i));
+                               if (i == requestHandlerType)
+                               {
+                                   return configurationOptions.IsHandlerIncluded(p);
+                               }
+
+                               return new[]
+                               {
+                                   pipelineBehaviorType,
+                                   streamRequestHandlerType,
+                                   streamPipelineBehaviorType,
+                                   syncNotificationHandlerType
+                               }.Contains(i);
+                           });
             }).ToList();
 
         if (configurationOptions.RegisterNotifications)
