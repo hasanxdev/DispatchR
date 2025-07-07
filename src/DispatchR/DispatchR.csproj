@@ -1,28 +1,42 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-    <PropertyGroup>
-        <TargetFrameworks>net8.0;net9.0</TargetFrameworks>
-        <ImplicitUsings>enable</ImplicitUsings>
-        <Nullable>enable</Nullable>
-        <PackageReadmeFile>README.md</PackageReadmeFile>
-        <PackageId>DispatchR.Mediator</PackageId>
-        <Authors>hasanxdev</Authors>
-        <Description>
-            Fast, zero-alloc alternative to MediatR for .NET – minimal, blazing fast, and DI-friendly.
-        </Description>
-        <PackageTags>DispatchR;Mediator;MediatR</PackageTags>
-        <PackageProjectUrl>https://github.com/hasanxdev/DispatchR</PackageProjectUrl>
-        <RepositoryUrl>https://github.com/hasanxdev/DispatchR</RepositoryUrl>
-    </PropertyGroup>
+	<PropertyGroup>
+		<!-- Multi-targeting for .NET 8 and 9 -->
+		<TargetFrameworks>net8.0;net9.0</TargetFrameworks>
 
-    <ItemGroup>
-		<!--<PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="[8.0.2, )" />-->
-		<PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.0.2" Condition="'$(TargetFramework)' == 'net8.0'" />
-		<PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="9.0.6" Condition="'$(TargetFramework)' == 'net9.0'" />
+		<!-- Basic project settings -->
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+
+		<!-- NuGet package metadata -->
+		<PackageReadmeFile>README.md</PackageReadmeFile>
+		<PackageId>DispatchR.Mediator</PackageId>
+		<Authors>hasanxdev</Authors>
+		<Description>
+			Fast, zero-alloc alternative to MediatR for .NET – minimal, blazing fast, and DI-friendly.
+		</Description>
+		<PackageTags>DispatchR;Mediator;MediatR</PackageTags>
+		<PackageProjectUrl>https://github.com/hasanxdev/DispatchR</PackageProjectUrl>
+		<RepositoryUrl>https://github.com/hasanxdev/DispatchR</RepositoryUrl>
+	</PropertyGroup>
+
+	<!-- Conditional NuGet packages for each framework -->
+	<ItemGroup>
+		<!-- Example of commented package reference -->
+
+		<!-- Version-specific references -->
+		<PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions"
+                          Version="8.0.2"
+                          Condition="'$(TargetFramework)' == 'net8.0'" />
+
+		<PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions"
+                          Version="9.0.6"
+                          Condition="'$(TargetFramework)' == 'net9.0'" />
 	</ItemGroup>
 
-    <ItemGroup>
-        <None Include="..\..\README.md" Pack="true" PackagePath="\" />
-    </ItemGroup>
+	<!-- Include README in package -->
+	<ItemGroup>
+		<None Include="..\..\README.md" Pack="true" PackagePath="\" />
+	</ItemGroup>
 
 </Project>
