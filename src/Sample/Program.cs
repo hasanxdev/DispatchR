@@ -1,9 +1,5 @@
 using DispatchR.Extensions;
-using Microsoft.OpenApi.Models;
 using Scalar.AspNetCore;
-
-
-//using Scalar.AspNetCore;
 using DispatchRNotificationSample = Sample.DispatchR.Notification;
 using DispatchRSample = Sample.DispatchR.SendRequest;
 using DispatchRStreamSample = Sample.DispatchR.StreamRequest;
@@ -14,9 +10,7 @@ using MediatRStreamSample = Sample.MediatR.StreamRequest;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-
-//builder.Services.AddEndpointsApiExplorer();
-//builder.Services.AddSwaggerGen();
+// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
 
 builder.Services.AddMediatR(cfg =>
@@ -48,8 +42,6 @@ var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
 {
-    //app.UseSwagger();
-    //app.UseSwaggerUI();
     app.MapOpenApi();
     app.MapScalarApiReference();
 }
@@ -62,17 +54,17 @@ var summaries = new[]
 };
 
 app.MapGet("/weatherforecast", () =>
-    {
-        var forecast = Enumerable.Range(1, 5).Select(index =>
-                new WeatherForecast
-                (
-                    DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-                    Random.Shared.Next(-20, 55),
-                    summaries[Random.Shared.Next(summaries.Length)]
-                ))
-            .ToArray();
-        return forecast;
-    })
+{
+    var forecast = Enumerable.Range(1, 5).Select(index =>
+            new WeatherForecast
+            (
+                DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
+                Random.Shared.Next(-20, 55),
+                summaries[Random.Shared.Next(summaries.Length)]
+            ))
+        .ToArray();
+    return forecast;
+})
     .WithName("GetWeatherForecast");
 
 app.MapGet("/Send/MediatR", (MediatR.IMediator mediatR, CancellationToken cancellationToken)
