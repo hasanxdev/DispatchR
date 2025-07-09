@@ -1,5 +1,7 @@
 using DispatchR.Extensions;
 using Microsoft.OpenApi.Models;
+using Scalar.AspNetCore;
+
 
 //using Scalar.AspNetCore;
 using DispatchRNotificationSample = Sample.DispatchR.Notification;
@@ -13,8 +15,9 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+//builder.Services.AddEndpointsApiExplorer();
+//builder.Services.AddSwaggerGen();
+builder.Services.AddOpenApi();
 
 builder.Services.AddMediatR(cfg =>
 {
@@ -45,8 +48,10 @@ var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
+    //app.UseSwagger();
+    //app.UseSwaggerUI();
+    app.MapOpenApi();
+    app.MapScalarApiReference();
 }
 
 app.UseHttpsRedirection();
