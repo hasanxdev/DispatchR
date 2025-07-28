@@ -37,6 +37,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AspireModularSample.Service
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AspireModularSample.ServiceB", "src\AspireModularExample\AspireModularSample.ServiceB\AspireModularSample.ServiceB.csproj", "{707E07BA-998C-49DE-BA56-7E9C0B6B7DBA}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DispatchR.UnitTest", "tests\DispatchR.UnitTest\DispatchR.UnitTest.csproj", "{806030F5-86B1-4EFC-923C-94FF7D32DFC9}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -131,6 +133,18 @@ Global
 		{707E07BA-998C-49DE-BA56-7E9C0B6B7DBA}.Release|x64.Build.0 = Release|Any CPU
 		{707E07BA-998C-49DE-BA56-7E9C0B6B7DBA}.Release|x86.ActiveCfg = Release|Any CPU
 		{707E07BA-998C-49DE-BA56-7E9C0B6B7DBA}.Release|x86.Build.0 = Release|Any CPU
+		{806030F5-86B1-4EFC-923C-94FF7D32DFC9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{806030F5-86B1-4EFC-923C-94FF7D32DFC9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{806030F5-86B1-4EFC-923C-94FF7D32DFC9}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{806030F5-86B1-4EFC-923C-94FF7D32DFC9}.Debug|x64.Build.0 = Debug|Any CPU
+		{806030F5-86B1-4EFC-923C-94FF7D32DFC9}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{806030F5-86B1-4EFC-923C-94FF7D32DFC9}.Debug|x86.Build.0 = Debug|Any CPU
+		{806030F5-86B1-4EFC-923C-94FF7D32DFC9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{806030F5-86B1-4EFC-923C-94FF7D32DFC9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{806030F5-86B1-4EFC-923C-94FF7D32DFC9}.Release|x64.ActiveCfg = Release|Any CPU
+		{806030F5-86B1-4EFC-923C-94FF7D32DFC9}.Release|x64.Build.0 = Release|Any CPU
+		{806030F5-86B1-4EFC-923C-94FF7D32DFC9}.Release|x86.ActiveCfg = Release|Any CPU
+		{806030F5-86B1-4EFC-923C-94FF7D32DFC9}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -146,5 +160,6 @@ Global
 		{3416F900-58F9-4AB6-AC8A-95B03C7BD9A3} = {BA3021C0-B64E-B700-D62A-004419E20C36}
 		{7D2890FF-66F7-4870-BB89-952167AB0681} = {BA3021C0-B64E-B700-D62A-004419E20C36}
 		{707E07BA-998C-49DE-BA56-7E9C0B6B7DBA} = {BA3021C0-B64E-B700-D62A-004419E20C36}
+		{806030F5-86B1-4EFC-923C-94FF7D32DFC9} = {7F7601D5-C62E-4EA3-8B71-E946A62B4529}
 	EndGlobalSection
 EndGlobal

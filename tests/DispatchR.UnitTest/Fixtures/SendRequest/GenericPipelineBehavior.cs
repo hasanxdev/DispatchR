@@ -1,0 +1,15 @@
+using DispatchR.Requests.Send;
+
+namespace DispatchR.UnitTest.Fixtures.SendRequest;
+
+public class GenericPipelineBehavior<TRequest, TResponse>()
+    : IPipelineBehavior<TRequest, ValueTask<TResponse>>
+    where TRequest : class, IRequest<TRequest, ValueTask<TResponse>>, new()
+{
+    public ValueTask<TResponse> Handle(TRequest request, CancellationToken cancellationToken)
+    {
+        return NextPipeline.Handle(request, cancellationToken);
+    }
+
+    public required IRequestHandler<TRequest, ValueTask<TResponse>> NextPipeline { get; set; }
+}
