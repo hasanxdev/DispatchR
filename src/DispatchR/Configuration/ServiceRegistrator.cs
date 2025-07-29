@@ -53,12 +53,22 @@ namespace DispatchR.Configuration
                         .Where(p =>
                         {
                             var interfaces = p.GetInterfaces();
+                            if (p.IsGenericType)
+                            {
+                                // handle generic pipelines
+                                return interfaces
+                                           .FirstOrDefault(inter =>
+                                               inter.IsGenericType &&
+                                               inter.GetGenericTypeDefinition() == behaviorType)
+                                           ?.GetInterfaces().First().GetGenericTypeDefinition() ==
+                                       handlerInterface.GetGenericTypeDefinition();
+                            }
+
                             return interfaces
                                        .FirstOrDefault(inter =>
                                            inter.IsGenericType &&
                                            inter.GetGenericTypeDefinition() == behaviorType)
-                                       ?.GetInterfaces().First().GetGenericTypeDefinition() ==
-                                   handlerInterface.GetGenericTypeDefinition();
+                                       ?.GetInterfaces().First() == handlerInterface;
                         }).ToList();
 
                     // Sort pipelines by the specified order passed via ConfigurationOptions

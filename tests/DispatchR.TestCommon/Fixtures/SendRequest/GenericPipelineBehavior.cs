@@ -1,6 +1,6 @@
 using DispatchR.Requests.Send;
 
-namespace DispatchR.UnitTest.Fixtures.SendRequest;
+namespace DispatchR.TestCommon.Fixtures.SendRequest;
 
 public class GenericPipelineBehavior<TRequest, TResponse>()
     : IPipelineBehavior<TRequest, ValueTask<TResponse>>

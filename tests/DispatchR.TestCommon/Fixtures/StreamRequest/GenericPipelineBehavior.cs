@@ -1,6 +1,6 @@
 using DispatchR.Requests.Stream;
 
-namespace DispatchR.UnitTest.Fixtures.StreamRequest;
+namespace DispatchR.TestCommon.Fixtures.StreamRequest;
 
 public class GenericPipelineBehavior<TRequest, TResponse>()
     : IStreamPipelineBehavior<TRequest, TResponse>

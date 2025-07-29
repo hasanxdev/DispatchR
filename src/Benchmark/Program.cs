@@ -1,4 +1,3 @@
-using System.ComponentModel.DataAnnotations;
 using Benchmark;
 using Benchmark.Notification;
 using Benchmark.SendRequest;
@@ -19,33 +18,36 @@ BenchmarkSwitcher.FromTypes([
     .AddColumn(new OperationsColumn())
 );
     
-public class OperationsColumn : IColumn
+namespace Benchmark
 {
-    public string Id => nameof(OperationsColumn);
-    public string ColumnName => "OpsCount";
-    public bool AlwaysShow => true;
-    public ColumnCategory Category => ColumnCategory.Custom;
-    public int PriorityInCategory => -10;
-    public bool IsNumeric => true;
-    public UnitType UnitType => UnitType.Dimensionless;
-    public string Legend => "Number of operations per invoke";
-
-    public string GetValue(Summary summary, BenchmarkCase benchmarkCase)
+    public class OperationsColumn : IColumn
     {
-        return benchmarkCase.Descriptor.WorkloadMethod
-            .GetCustomAttributes(typeof(BenchmarkAttribute), false)
-            .Cast<BenchmarkAttribute>()
-            .FirstOrDefault()?.OperationsPerInvoke.ToString() ?? "1";
+        public string Id => nameof(OperationsColumn);
+        public string ColumnName => "OpsCount";
+        public bool AlwaysShow => true;
+        public ColumnCategory Category => ColumnCategory.Custom;
+        public int PriorityInCategory => -10;
+        public bool IsNumeric => true;
+        public UnitType UnitType => UnitType.Dimensionless;
+        public string Legend => "Number of operations per invoke";
+
+        public string GetValue(Summary summary, BenchmarkCase benchmarkCase)
+        {
+            return benchmarkCase.Descriptor.WorkloadMethod
+                .GetCustomAttributes(typeof(BenchmarkAttribute), false)
+                .Cast<BenchmarkAttribute>()
+                .FirstOrDefault()?.OperationsPerInvoke.ToString() ?? "1";
+        }
+
+        public string GetValue(Summary summary, BenchmarkCase benchmarkCase, SummaryStyle style)
+            => GetValue(summary, benchmarkCase);
+
+        public bool IsDefault(Summary summary, BenchmarkCase benchmarkCase)
+        {
+            return true;
+        }
+
+        public bool IsAvailable(Summary summary) => true;
+        public bool IsDefault(Summary summary) => false;
     }
-
-    public string GetValue(Summary summary, BenchmarkCase benchmarkCase, SummaryStyle style)
-        => GetValue(summary, benchmarkCase);
-
-    public bool IsDefault(Summary summary, BenchmarkCase benchmarkCase)
-    {
-        return true;
-    }
-
-    public bool IsAvailable(Summary summary) => true;
-    public bool IsDefault(Summary summary) => false;
 }

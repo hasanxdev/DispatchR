@@ -1,8 +1,8 @@
 using DispatchR.Requests.Notification;
 
-namespace DispatchR.UnitTest.Fixtures.Notification;
+namespace DispatchR.TestCommon.Fixtures.Notification;
 
-public sealed class NotificationTwoHandler() : INotificationHandler<MultiHandlersNotification>
+public sealed class NotificationThreeHandler() : INotificationHandler<MultiHandlersNotification>
 {
     public ValueTask Handle(MultiHandlersNotification request, CancellationToken cancellationToken)
     {
