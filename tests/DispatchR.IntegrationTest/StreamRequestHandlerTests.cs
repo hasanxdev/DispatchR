@@ -16,7 +16,7 @@ namespace DispatchR.IntegrationTest;
 public class StreamRequestHandlerTests
 {
     [Fact]
-    public async Task Send_UsesPipelineBehaviors_RequestWithSinglePipelines()
+    public async Task CreateStream_UsesPipelineBehavior_WithSinglePipeline()
     {
         // Arrange
         var services = new ServiceCollection();

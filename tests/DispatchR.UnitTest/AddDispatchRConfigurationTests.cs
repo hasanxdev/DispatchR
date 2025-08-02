@@ -3,16 +3,17 @@ using DispatchR.Extensions;
 using DispatchR.Requests;
 using DispatchR.Requests.Stream;
 using DispatchR.TestCommon.Fixtures;
+using DispatchR.TestCommon.Fixtures.Notification;
 using DispatchR.TestCommon.Fixtures.SendRequest;
 using DispatchR.TestCommon.Fixtures.SendRequest.ValueTask;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace DispatchR.UnitTest;
 
-public class AddDispachRConfigurationTests
+public class AddDispatchRConfigurationTests
 {
     [Fact]
-    public void Send_ReturnsExpectedResponse_DefaultHandlers()
+    public void AddDispatchR_ReturnsExpectedResponse_DefaultHandlers()
     {
         // Arrange
         var services = new ServiceCollection();
@@ -36,7 +37,7 @@ public class AddDispachRConfigurationTests
     }
     
     [Fact]
-    public void Send_ReturnsExpectedResponse_IncludeSingleHandler()
+    public void AddDispatchR_ReturnsExpectedResponse_IncludeSingleHandler()
     {
         // Arrange
         var services = new ServiceCollection();
@@ -59,7 +60,7 @@ public class AddDispachRConfigurationTests
     }
     
     [Fact]
-    public void Send_ReturnsExpectedResponse_ExcludeSingleHandler()
+    public void AddDispatchR_ReturnsExpectedResponse_ExcludeSingleHandler()
     {
         // Arrange
         var services = new ServiceCollection();
@@ -82,7 +83,7 @@ public class AddDispachRConfigurationTests
     }
     
     [Fact]
-    public void Send_ReturnsExpectedResponse_IncludeAndExcludeOneHandlers()
+    public void AddDispatchR_ReturnsExpectedResponse_IncludeAndExcludeOneHandlers()
     {
         // Arrange
         var services = new ServiceCollection();
@@ -106,7 +107,7 @@ public class AddDispachRConfigurationTests
     }
     
     [Fact]
-    public void Send_ThrowsException_WhenIncludeHandlersBeEmpty()
+    public void AddDispatchR_ThrowsException_WhenIncludeHandlersBeEmpty()
     {
         // Arrange
         var services = new ServiceCollection();
@@ -125,7 +126,7 @@ public class AddDispachRConfigurationTests
     }
     
     [Fact]
-    public void Send_ThrowsException_WhenExcludeHandlersBeEmpty()
+    public void AddDispatchR_ThrowsException_WhenExcludeHandlersBeEmpty()
     {
         // Arrange
         var services = new ServiceCollection();
@@ -144,7 +145,7 @@ public class AddDispachRConfigurationTests
     }
     
     [Fact]
-    public async Task Send_UsesPipelineBehaviorsInCorrectOrder_RequestWithMultiplePipelines()
+    public async Task AddDispatchR_UsesPipelineBehaviorsInCorrectOrder_RequestWithMultiplePipelines()
     {
         // Arrange
         var services = new ServiceCollection();
@@ -172,7 +173,7 @@ public class AddDispachRConfigurationTests
     }
     
     [Fact]
-    public void Send_RegisterGenericPipeline_IncludeGenericPipeline()
+    public void AddDispatchR_RegisterGenericPipeline_IncludeGenericPipeline()
     {
         // Arrange
         var services = new ServiceCollection();
@@ -193,5 +194,31 @@ public class AddDispachRConfigurationTests
                 p.KeyedImplementationType!.IsGenericType &&
                 p.KeyedImplementationType?.GetGenericTypeDefinition() == typeof(GenericPipelineBehavior<,>).GetGenericTypeDefinition());
         Assert.Equal(1, countOfAllSimpleHandlers);
+    }
+    
+    [Fact]
+    public void AddDispatchR_RegisterNotifications_FindNotifications()
+    {
+        // Arrange
+        var services = new ServiceCollection();
+
+        // Act
+        services.AddDispatchR(cfg =>
+        {
+            cfg.Assemblies.Add(typeof(Fixture).Assembly);
+            cfg.RegisterPipelines = false;
+            cfg.RegisterNotifications = true;
+            cfg.IncludeHandlers = [Fixture.AnyHandlerRequestWithoutPipeline.GetType()];
+        });
+
+        // Assert
+        var countOfAllSimpleHandlers = services
+            .Count(p =>
+                p.IsKeyedService is false && 
+                (p.ImplementationType == typeof(NotificationOneHandler) ||
+                 p.ImplementationType == typeof(NotificationTwoHandler) ||
+                 p.ImplementationType == typeof(NotificationThreeHandler)));
+        
+        Assert.Equal(3, countOfAllSimpleHandlers);
     }
 }
