@@ -57,14 +57,4 @@ public class RequestHandlerTests
         spyPipelineOneMock.Verify(p => p.Handle(It.IsAny<PingValueTask>(), It.IsAny<CancellationToken>()), Times.Exactly(1));
         spyPipelineTwoMock.Verify(p => p.Handle(It.IsAny<PingValueTask>(), It.IsAny<CancellationToken>()), Times.Exactly(1));
     }
-    
-    [Fact]
-    public void Send_ThrowsException_WhenNoHandlerIsRegistered()
-    {
-    }
-    
-    [Fact]
-    public void Send_UsesCachedHandler_InstanceReusedInScopedLifetime()
-    {
-    }
 }
