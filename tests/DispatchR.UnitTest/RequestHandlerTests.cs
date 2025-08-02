@@ -82,7 +82,7 @@ public class RequestHandlerTests
     }
     
     [Fact]
-    public async Task Send_UsesPipelineBehaviors_RequestWithSinglePipelines()
+    public async Task Send_UsesPipelineBehaviors_RequestWithPipelines()
     {
         // Arrange
         var services = new ServiceCollection();
@@ -152,6 +152,6 @@ public class RequestHandlerTests
         var third = mediator.Send(new RequestReusedInScopedLifetime(), CancellationToken.None);
         
         // Assert
-        Assert.Equal(first, 1);
+        Assert.Equal(3, first + second + third);
     }
 }

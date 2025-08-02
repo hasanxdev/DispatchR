@@ -3,6 +3,7 @@ using DispatchR.Extensions;
 using DispatchR.Requests;
 using DispatchR.Requests.Stream;
 using DispatchR.TestCommon.Fixtures;
+using DispatchR.TestCommon.Fixtures.SendRequest;
 using DispatchR.TestCommon.Fixtures.SendRequest.ValueTask;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -168,5 +169,29 @@ public class AddDispachRConfigurationTests
         // Assert
         Assert.Equal(1, result);
         Assert.True(PingValueTaskFirstPipelineBehavior.ExecutionTime < PingValueTaskSecondPipelineBehavior.ExecutionTime);
+    }
+    
+    [Fact]
+    public void Send_RegisterGenericPipeline_IncludeGenericPipeline()
+    {
+        // Arrange
+        var services = new ServiceCollection();
+
+        // Act
+        services.AddDispatchR(cfg =>
+        {
+            cfg.Assemblies.Add(typeof(Fixture).Assembly);
+            cfg.RegisterPipelines = true;
+            cfg.RegisterNotifications = false;
+            cfg.IncludeHandlers = [Fixture.AnyHandlerRequestWithPipeline.GetType()];
+        });
+
+        // Assert
+        var countOfAllSimpleHandlers = services
+            .Count(p =>
+                p.IsKeyedService && 
+                p.KeyedImplementationType!.IsGenericType &&
+                p.KeyedImplementationType?.GetGenericTypeDefinition() == typeof(GenericPipelineBehavior<,>).GetGenericTypeDefinition());
+        Assert.Equal(1, countOfAllSimpleHandlers);
     }
 }
