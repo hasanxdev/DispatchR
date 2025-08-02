@@ -1,20 +1,17 @@
+using DispatchR.Exceptions;
 using DispatchR.Extensions;
 using DispatchR.Requests;
-using DispatchR.Requests.Send;
 using DispatchR.Requests.Stream;
 using DispatchR.TestCommon.Fixtures;
-using DispatchR.TestCommon.Fixtures.SendRequest.ReusedInScopedLifetime;
 using DispatchR.TestCommon.Fixtures.SendRequest.ValueTask;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection.Extensions;
-using Moq;
 
 namespace DispatchR.UnitTest;
 
 public class AddDispachRConfigurationTests
 {
     [Fact]
-    public void Send_ReturnsExpectedResponse_IncludeAllHandlers()
+    public void Send_ReturnsExpectedResponse_DefaultHandlers()
     {
         // Arrange
         var services = new ServiceCollection();
@@ -81,6 +78,68 @@ public class AddDispachRConfigurationTests
                 p.IsKeyedService && 
                 p.KeyedImplementationType == Fixture.AnyHandlerRequestWithoutPipeline.GetType());
         Assert.Equal(0, countOfAllSimpleHandlers);
+    }
+    
+    [Fact]
+    public void Send_ReturnsExpectedResponse_IncludeAndExcludeOneHandlers()
+    {
+        // Arrange
+        var services = new ServiceCollection();
+
+        // Act
+        services.AddDispatchR(cfg =>
+        {
+            cfg.Assemblies.Add(typeof(Fixture).Assembly);
+            cfg.RegisterPipelines = true;
+            cfg.RegisterNotifications = false;
+            cfg.IncludeHandlers = [Fixture.AnyHandlerRequestWithoutPipeline.GetType()];
+            cfg.ExcludeHandlers = [Fixture.AnyHandlerRequestWithoutPipeline.GetType()];
+        });
+
+        // Assert
+        var countOfAllSimpleHandlers = services
+            .Count(p =>
+                p.IsKeyedService && 
+                p.KeyedImplementationType == Fixture.AnyHandlerRequestWithoutPipeline.GetType());
+        Assert.Equal(0, countOfAllSimpleHandlers);
+    }
+    
+    [Fact]
+    public void Send_ThrowsException_WhenIncludeHandlersBeEmpty()
+    {
+        // Arrange
+        var services = new ServiceCollection();
+
+        // Act
+        var act = () => services.AddDispatchR(cfg =>
+        {
+            cfg.Assemblies.Add(typeof(Fixture).Assembly);
+            cfg.RegisterPipelines = true;
+            cfg.RegisterNotifications = false;
+            cfg.IncludeHandlers = [];
+        });
+
+        // Assert
+        Assert.Throws<IncludeHandlersCannotBeArrayEmptyException>(act);
+    }
+    
+    [Fact]
+    public void Send_ThrowsException_WhenExcludeHandlersBeEmpty()
+    {
+        // Arrange
+        var services = new ServiceCollection();
+
+        // Act
+        var act = () => services.AddDispatchR(cfg =>
+        {
+            cfg.Assemblies.Add(typeof(Fixture).Assembly);
+            cfg.RegisterPipelines = true;
+            cfg.RegisterNotifications = false;
+            cfg.ExcludeHandlers = [];
+        });
+
+        // Assert
+        Assert.Throws<ExcludeHandlersCannotBeArrayEmptyException>(act);
     }
     
     [Fact]
