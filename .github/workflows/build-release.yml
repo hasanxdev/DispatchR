@@ -32,11 +32,8 @@ jobs:
       - name: Build
         run: dotnet build src/DispatchR/DispatchR.csproj --configuration Release --no-restore
         
-      - name: Run Unit Tests
-        run: dotnet test tests/DispatchR.UnitTest/DispatchR.UnitTest.csproj --configuration Release --no-build --collect:"XPlat Code Coverage"      
-
-      - name: Run Integration Tests
-        run: dotnet test tests/DispatchR.IntegrationTest/DispatchR.IntegrationTest.csproj --configuration Release --no-build --collect:"XPlat Code Coverage"
+      - name: Run Tests
+        run: dotnet test --no-build --verbosity normal /p:CollectCoverage=true /p:CoverletOutputFormat=opencover
 
       - name: Upload Coverage to Codecov
         uses: codecov/codecov-action@v5
