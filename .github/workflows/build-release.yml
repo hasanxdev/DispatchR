@@ -39,10 +39,9 @@ jobs:
         run: dotnet test tests/DispatchR.IntegrationTest/DispatchR.IntegrationTest.csproj --configuration Release --no-build --filter "TestCategory=Integration" --collect:"XPlat Code Coverage"
 
       - name: Upload Coverage to Codecov
-        uses: codecov/codecov-action@v3
-        with:
-          token: ${{ secrets.CODECOV_TOKEN }}
-          files: '**/coverage.cobertura.xml'
+        uses: codecov/codecov-action@v5
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
       
       - name: Extract version from tag
         id: get_version
