@@ -4,6 +4,9 @@ on:
   push:
     tags:
       - '*.*.*'
+  pull_request:
+    branches:
+      - main
       
 jobs:
   build:
@@ -29,6 +32,17 @@ jobs:
       - name: Build
         run: dotnet build src/DispatchR/DispatchR.csproj --configuration Release --no-restore
         
+      - name: Run Unit Tests
+        run: dotnet test tests/DispatchR.UnitTest/DispatchR.UnitTest.csproj --configuration Release --no-build --filter "TestCategory=Unit" --collect:"XPlat Code Coverage"      
+
+      - name: Run Integration Tests
+        run: dotnet test tests/DispatchR.IntegrationTest/DispatchR.IntegrationTest.csproj --configuration Release --no-build --filter "TestCategory=Integration" --collect:"XPlat Code Coverage"
+
+      - name: Upload Coverage to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+      
       - name: Extract version from tag
         id: get_version
         run: echo "version=${GITHUB_REF#refs/tags/v}" >> "$GITHUB_OUTPUT"

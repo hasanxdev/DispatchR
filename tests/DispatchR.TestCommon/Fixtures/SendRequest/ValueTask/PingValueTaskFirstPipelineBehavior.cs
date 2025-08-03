@@ -6,9 +6,10 @@ public class PingValueTaskFirstPipelineBehavior() : IPipelineBehavior<PingValueT
 {
     public static DateTime ExecutionTime { get; private set; }
     public required IRequestHandler<PingValueTask, ValueTask<int>> NextPipeline { get; set; }
-    public ValueTask<int> Handle(PingValueTask request, CancellationToken cancellationToken)
+    public async ValueTask<int> Handle(PingValueTask request, CancellationToken cancellationToken)
     {
         ExecutionTime = DateTime.Now;
-        return NextPipeline.Handle(request, cancellationToken);
+        await System.Threading.Tasks.Task.Delay(100, cancellationToken).ConfigureAwait(false);
+        return await NextPipeline.Handle(request, cancellationToken);
     }
 }

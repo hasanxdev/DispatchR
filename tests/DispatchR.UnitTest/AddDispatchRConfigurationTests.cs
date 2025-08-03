@@ -13,6 +13,23 @@ namespace DispatchR.UnitTest;
 public class AddDispatchRConfigurationTests
 {
     [Fact]
+    public void TraditionalAddDispatchR_ReturnsExpectedResponse_DefaultHandlers()
+    {
+        // Arrange
+        var services = new ServiceCollection();
+        
+        // Act
+        services.AddDispatchR(typeof(Fixture).Assembly, withPipelines: true, withNotifications: false);
+        
+        // Assert
+        var countOfAllSimpleHandlers = services
+            .Count(p =>
+                p.IsKeyedService && 
+                p.KeyedImplementationType!.GetInterface(typeof(IStreamRequestHandler<,>).Name, true) is null);
+        Assert.True(countOfAllSimpleHandlers > 1);
+    }
+    
+    [Fact]
     public void AddDispatchR_ReturnsExpectedResponse_DefaultHandlers()
     {
         // Arrange
@@ -192,7 +209,7 @@ public class AddDispatchRConfigurationTests
             .Count(p =>
                 p.IsKeyedService && 
                 p.KeyedImplementationType!.IsGenericType &&
-                p.KeyedImplementationType?.GetGenericTypeDefinition() == typeof(GenericPipelineBehavior<,>).GetGenericTypeDefinition());
+                p.KeyedImplementationType?.GetGenericTypeDefinition() == typeof(GenericPipelineBehaviorWithResponse<,>).GetGenericTypeDefinition());
         Assert.Equal(1, countOfAllSimpleHandlers);
     }
     

@@ -65,10 +65,10 @@ namespace DispatchR.Configuration
                             }
 
                             return interfaces
-                                       .FirstOrDefault(inter =>
-                                           inter.IsGenericType &&
-                                           inter.GetGenericTypeDefinition() == behaviorType)
-                                       ?.GetInterfaces().First() == handlerInterface;
+                                .FirstOrDefault(inter =>
+                                    inter.IsGenericType &&
+                                    inter.GetGenericTypeDefinition() == behaviorType)
+                                ?.GetInterfaces().First() == handlerInterface;
                         }).ToList();
 
                     // Sort pipelines by the specified order passed via ConfigurationOptions
@@ -102,17 +102,28 @@ namespace DispatchR.Configuration
                             var responseTypeArg = handlerInterface.GenericTypeArguments[1];
                             if (genericHandlerResponseIsAwaitable && handlerResponseTypeIsAwaitable)
                             {
-                                if (genericHandlerResponseType.GetGenericTypeDefinition() !=
-                                    handlerInterface.GenericTypeArguments[1].GetGenericTypeDefinition())
+                                var areGenericTypeArgumentsInHandlerInterfaceMismatched =
+                                    genericHandlerResponseType.IsGenericType &&
+                                    handlerInterface.GenericTypeArguments[1].IsGenericType &&
+                                    genericHandlerResponseType.GetGenericTypeDefinition() !=
+                                    handlerInterface.GenericTypeArguments[1].GetGenericTypeDefinition();
+                                
+                                if (areGenericTypeArgumentsInHandlerInterfaceMismatched ||
+                                    genericHandlerResponseType.IsGenericType ^
+                                    handlerInterface.GenericTypeArguments[1].IsGenericType)
                                 {
                                     continue;
                                 }
 
                                 // register async generic pipelines
-                                responseTypeArg = responseTypeArg.GenericTypeArguments[0];
+                                if (responseTypeArg.GenericTypeArguments.Any())
+                                {
+                                    responseTypeArg = responseTypeArg.GenericTypeArguments[0];
+                                }
                             }
 
-                            var closedGenericType = pipeline.MakeGenericType(handlerInterface.GenericTypeArguments[0], responseTypeArg);
+                            var closedGenericType = pipeline.MakeGenericType(handlerInterface.GenericTypeArguments[0],
+                                responseTypeArg);
                             services.AddKeyedScoped(typeof(IRequestHandler), key, closedGenericType);
                         }
                         else
@@ -140,7 +151,8 @@ namespace DispatchR.Configuration
             }
         }
 
-        public static void RegisterNotification(IServiceCollection services, List<Type> allTypes, Type syncNotificationHandlerType)
+        public static void RegisterNotification(IServiceCollection services, List<Type> allTypes,
+            Type syncNotificationHandlerType)
         {
             var allNotifications = allTypes
                 .Where(p =>
@@ -150,7 +162,7 @@ namespace DispatchR.Configuration
                         .Select(i => i.GetGenericTypeDefinition())
                         .Any(i => new[]
                         {
-                        syncNotificationHandlerType
+                            syncNotificationHandlerType
                         }.Contains(i));
                 })
                 .GroupBy(p =>
@@ -159,7 +171,7 @@ namespace DispatchR.Configuration
                         .Where(i => i.IsGenericType)
                         .First(i => new[]
                         {
-                        syncNotificationHandlerType
+                            syncNotificationHandlerType
                         }.Contains(i.GetGenericTypeDefinition()));
                     return @interface.GenericTypeArguments.First();
                 })
@@ -182,7 +194,8 @@ namespace DispatchR.Configuration
             if (type.IsGenericType)
             {
                 var genericDef = type.GetGenericTypeDefinition();
-                return genericDef == typeof(Task<>) || genericDef == typeof(ValueTask<>) || genericDef == typeof(IAsyncEnumerable<>);
+                return genericDef == typeof(Task<>) || genericDef == typeof(ValueTask<>) ||
+                       genericDef == typeof(IAsyncEnumerable<>);
             }
 
             return false;

@@ -104,6 +104,54 @@ public class RequestHandlerTests
     }
     
     [Fact]
+    public async Task Send_UsesPipelineBehaviors_RequestWithOutResponseWithPipelines()
+    {
+        // Arrange
+        var services = new ServiceCollection();
+        services.AddDispatchR(cfg =>
+        {
+            cfg.Assemblies.Add(typeof(Fixture).Assembly);
+            cfg.RegisterPipelines = true;
+            cfg.RegisterNotifications = false;
+            cfg.IncludeHandlers = [Fixture.AnyHandlerRequestWithoutResponseWithPipeline.GetType()];
+        });
+        var serviceProvider = services.BuildServiceProvider();
+        var mediator = serviceProvider.GetRequiredService<IMediator>();
+        
+        // Act
+        await mediator.Send(Fixture.AnyRequestWithoutResponsePipeline, CancellationToken.None);
+        
+        // Assert
+        // Just checking if it runs without exceptions
+    }
+    
+    [Fact]
+    public async Task Send_UsesPipelineBehaviors_ChangePipelineOrdering()
+    {
+        // Arrange
+        var services = new ServiceCollection();
+        services.AddDispatchR(cfg =>
+        {
+            cfg.Assemblies.Add(typeof(Fixture).Assembly);
+            cfg.RegisterPipelines = true;
+            cfg.RegisterNotifications = false;
+            cfg.PipelineOrder =
+            [
+                typeof(PingValueTaskFirstPipelineBehavior)
+            ];
+            cfg.IncludeHandlers = [Fixture.AnyHandlerRequestWithPipeline.GetType()];
+        });
+        var serviceProvider = services.BuildServiceProvider();
+        var mediator = serviceProvider.GetRequiredService<IMediator>();
+        
+        // Act
+        var result = await mediator.Send(new PingValueTask(), CancellationToken.None);
+        
+        // Assert
+        Assert.Equal(1, result);
+    }
+    
+    [Fact]
     public void Send_ThrowsException_WhenNoHandlerIsRegistered()
     {
         // Arrange

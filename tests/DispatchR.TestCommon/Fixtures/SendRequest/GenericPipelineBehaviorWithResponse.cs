@@ -2,7 +2,7 @@ using DispatchR.Requests.Send;
 
 namespace DispatchR.TestCommon.Fixtures.SendRequest;
 
-public class GenericPipelineBehavior<TRequest, TResponse>()
+public class GenericPipelineBehaviorWithResponse<TRequest, TResponse>()
     : IPipelineBehavior<TRequest, ValueTask<TResponse>>
     where TRequest : class, IRequest<TRequest, ValueTask<TResponse>>, new()
 {

@@ -4,8 +4,8 @@ namespace DispatchR.TestCommon.Fixtures.Notification;
 
 public sealed class NotificationOneHandler() : INotificationHandler<MultiHandlersNotification>
 {
-    public ValueTask Handle(MultiHandlersNotification request, CancellationToken cancellationToken)
+    public async ValueTask Handle(MultiHandlersNotification request, CancellationToken cancellationToken)
     {
-        return ValueTask.CompletedTask;
+        await Task.Delay(100, cancellationToken);
     }
 }

@@ -1,7 +1,10 @@
+using System.Diagnostics.CodeAnalysis;
+
 namespace DispatchR.Requests.Send;
 
 public interface IRequestHandler
 {
+    [ExcludeFromCodeCoverage]
     internal void SetNext(object handler)
     {
     }
