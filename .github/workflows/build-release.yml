@@ -36,7 +36,7 @@ jobs:
         run: dotnet build src/DispatchR/DispatchR.csproj --configuration Release --no-restore
         
       - name: Run Tests
-        run: dotnet test --no-build --configuration Release --collect:"XPlat Code Coverage"
+        run: dotnet test --collect:"XPlat Code Coverage"
 
       - name: List files
         run: ls -alh tests/DispatchR.IntegrationTest
