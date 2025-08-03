@@ -26,6 +26,9 @@ jobs:
         with:
           dotnet-version: '9.x'
           
+      - name: Install Coverlet
+        run: dotnet tool install --global coverlet.console
+          
       - name: Restore
         run: dotnet restore src/DispatchR/DispatchR.csproj
         
@@ -33,7 +36,7 @@ jobs:
         run: dotnet build src/DispatchR/DispatchR.csproj --configuration Release --no-restore
         
       - name: Run Tests
-        run: dotnet test --no-build --verbosity normal /p:CollectCoverage=true /p:CoverletOutputFormat=opencover
+        run: dotnet test --no-build --configuration Release --collect:"XPlat Code Coverage"
 
       - name: List files
         run: ls -alh tests/DispatchR.IntegrationTest
