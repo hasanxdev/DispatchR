@@ -371,7 +371,7 @@ builder.Services.AddScoped<INotificationHandler<Event>, EventHandler>();
 
 ## ✨ How to install?
 ```
-dotnet add package DispatchR.Mediator --version 1.3.2
+dotnet add package DispatchR.Mediator
 ```
 
 # 🧪 Bechmark Result:
