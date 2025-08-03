@@ -43,7 +43,7 @@ jobs:
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
         with:
-          files: '**/coverage.cobertura.xml'
+          files: './TestResults/**/coverage.cobertura.xml'
       
       - name: Extract version from tag
         id: get_version
