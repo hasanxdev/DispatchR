@@ -1,4 +1,5 @@
 ﻿using System.Runtime.CompilerServices;
+using DispatchR.Exceptions;
 using DispatchR.Requests.Notification;
 using DispatchR.Requests.Send;
 using DispatchR.Requests.Stream;
@@ -23,8 +24,15 @@ public sealed class Mediator(IServiceProvider serviceProvider) : IMediator
     public TResponse Send<TRequest, TResponse>(IRequest<TRequest, TResponse> request,
         CancellationToken cancellationToken) where TRequest : class, IRequest
     {
-        return serviceProvider.GetRequiredService<IRequestHandler<TRequest, TResponse>>()
-            .Handle(Unsafe.As<TRequest>(request), cancellationToken);
+        try
+        {
+            return serviceProvider.GetRequiredService<IRequestHandler<TRequest, TResponse>>()
+                .Handle(Unsafe.As<TRequest>(request), cancellationToken);
+        }
+        catch (Exception e) when (e.Message.Contains("No service for type", StringComparison.OrdinalIgnoreCase))
+        {
+            throw new HandlerNotFoundException<TRequest, TResponse>();
+        }
     }
 
     public IAsyncEnumerable<TResponse> CreateStream<TRequest, TResponse>(IStreamRequest<TRequest, TResponse> request, 

@@ -5,6 +5,7 @@ using DispatchR.Requests.Send;
 using DispatchR.Requests.Stream;
 using Microsoft.Extensions.DependencyInjection;
 using System.Reflection;
+using DispatchR.Exceptions;
 
 namespace DispatchR.Extensions;
 
@@ -14,6 +15,16 @@ public static class ServiceCollectionExtensions
     {
         var config = new ConfigurationOptions();
         configuration(config);
+
+        if (config is {IncludeHandlers.Count:0})
+        {
+            throw new IncludeHandlersCannotBeArrayEmptyException();
+        }
+        
+        if (config is {ExcludeHandlers.Count:0})
+        {
+            throw new ExcludeHandlersCannotBeArrayEmptyException();
+        }
 
         return services.AddDispatchR(config);
     }

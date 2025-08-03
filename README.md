@@ -1,6 +1,7 @@
 # DispatchR 🚀
 
 ![CI](https://github.com/hasanxdev/DispatchR/workflows/Release/badge.svg)
+[![codecov](https://codecov.io/github/hasanxdev/dispatchr/graph/badge.svg?token=1FUG5DPUOE)](https://codecov.io/github/hasanxdev/dispatchr)
 [![NuGet](https://img.shields.io/nuget/dt/DispatchR.Mediator.svg)](https://www.nuget.org/packages/DispatchR.Mediator)
 [![NuGet](https://img.shields.io/nuget/vpre/DispatchR.Mediator.svg)](https://www.nuget.org/packages/DispatchR.Mediator)
 

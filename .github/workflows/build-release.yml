@@ -4,6 +4,9 @@ on:
   push:
     tags:
       - '*.*.*'
+  pull_request:
+    branches:
+      - main
       
 jobs:
   build:
@@ -23,18 +26,35 @@ jobs:
         with:
           dotnet-version: '9.x'
           
+      - name: Install Coverlet
+        run: dotnet tool install --global coverlet.console
+          
       - name: Restore
         run: dotnet restore src/DispatchR/DispatchR.csproj
         
       - name: Build
         run: dotnet build src/DispatchR/DispatchR.csproj --configuration Release --no-restore
         
+      - name: Run Tests
+        run: dotnet test --collect:"XPlat Code Coverage"
+
+      - name: List files
+        run: ls -alh tests/DispatchR.IntegrationTest
+        
+      - name: Upload Coverage to Codecov
+        uses: codecov/codecov-action@v5
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+      
       - name: Extract version from tag
         id: get_version
+        if: startsWith(github.ref, 'refs/tags/v')
         run: echo "version=${GITHUB_REF#refs/tags/v}" >> "$GITHUB_OUTPUT"
 
       - name: Pack project
+        if: startsWith(github.ref, 'refs/tags/v')
         run: dotnet pack src/DispatchR/DispatchR.csproj --configuration Release --no-build -o ./nupkgs /p:PackageVersion=${{ steps.get_version.outputs.version }}
 
       - name: Push to NuGet
+        if: startsWith(github.ref, 'refs/tags/v')
         run: dotnet nuget push "./nupkgs/*.nupkg" --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json
