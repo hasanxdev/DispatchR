@@ -36,7 +36,7 @@ jobs:
         run: dotnet test --no-build --verbosity normal /p:CollectCoverage=true /p:CoverletOutputFormat=opencover
 
       - name: List files
-        run: ls -alh
+        run: ls -alh tests
         
       - name: Upload Coverage to Codecov
         uses: codecov/codecov-action@v5
