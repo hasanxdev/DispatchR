@@ -39,8 +39,6 @@ jobs:
         uses: codecov/codecov-action@v5
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
-        with:
-          files: '**/coverage.cobertura.xml'
       
       - name: Extract version from tag
         id: get_version
