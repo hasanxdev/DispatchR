@@ -1,7 +1,6 @@
-using System.Runtime.CompilerServices;
-using DispatchR.Requests.Send;
+using DispatchR.Abstractions.Send;
 
-namespace DispatchR.Requests.Notification;
+namespace DispatchR.Abstractions.Notification;
 
 public interface INotificationHandler<in TRequestEvent> : IRequestHandler where TRequestEvent : INotification
 {

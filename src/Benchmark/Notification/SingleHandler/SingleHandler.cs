@@ -5,7 +5,7 @@ namespace Benchmark.Notification.SingleHandler;
 public sealed class SingleHandler
     : INotificationHandler<SingleHandlerNotification>,
         MediatR.INotificationHandler<SingleHandlerNotification>,
-        DispatchR.Requests.Notification.INotificationHandler<SingleHandlerNotification>
+        DispatchR.Abstractions.Notification.INotificationHandler<SingleHandlerNotification>
 {
     public ValueTask Handle(SingleHandlerNotification notification, CancellationToken cancellationToken) => default;
 

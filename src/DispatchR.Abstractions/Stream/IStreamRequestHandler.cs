@@ -1,6 +1,6 @@
-using DispatchR.Requests.Send;
+using DispatchR.Abstractions.Send;
 
-namespace DispatchR.Requests.Stream;
+namespace DispatchR.Abstractions.Stream;
 
 public interface IStreamRequestHandler<TRequest, TResponse> : IRequestHandler where TRequest : class, IStreamRequest
 {

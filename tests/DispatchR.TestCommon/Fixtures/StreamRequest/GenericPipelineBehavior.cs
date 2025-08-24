@@ -1,4 +1,4 @@
-using DispatchR.Requests.Stream;
+using DispatchR.Abstractions.Stream;
 
 namespace DispatchR.TestCommon.Fixtures.StreamRequest;
 

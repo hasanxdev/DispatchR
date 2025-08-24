@@ -1,4 +1,4 @@
-# DispatchR 🚀
+# <img src="./icon-mini.png" width="25">ispatchR 🚀
 
 ![CI](https://github.com/hasanxdev/DispatchR/workflows/Release/badge.svg)
 [![codecov](https://codecov.io/github/hasanxdev/dispatchr/graph/badge.svg?token=1FUG5DPUOE)](https://codecov.io/github/hasanxdev/dispatchr)
@@ -32,6 +32,15 @@
         1. `INotification`
         2. `INotificationHandler<TRequestEvent>`
 > :bulb: **Tip:** *If you're looking for a mediator with the raw performance of hand-written code, DispatchR is built for you.*
+
+## ✨ How to install?
+```
+dotnet add package DispatchR.Mediator
+```
+You can also separately add only the abstractions, which include the interfaces, in another layer:
+```
+dotnet add package DispatchR.Mediator.Abstractions
+```
 
 # Syntax Comparison: DispatchR vs MediatR
 
@@ -368,11 +377,6 @@ builder.Services.AddScoped<INotificationHandler<Event>, EventHandler>();
 1. Automatic pipeline and notification registration is enabled by default
 2. Manual registration allows for custom pipeline or notification ordering
 3. You can implement custom reflection if needed
-
-## ✨ How to install?
-```
-dotnet add package DispatchR.Mediator
-```
 
 # 🧪 Bechmark Result:
 > [!IMPORTANT]

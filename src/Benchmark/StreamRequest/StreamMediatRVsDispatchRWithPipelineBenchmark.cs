@@ -15,7 +15,7 @@ public class StreamMediatRVsDispatchWithPipelineRBenchmark
     private IServiceScope _serviceScopeForMediatRWithPipeline;
     private IServiceScope _serviceScopeForMediatSgWithPipeline;
     private IServiceScope _serviceScopeForDispatchRWithPipeline;
-    private DispatchR.Requests.IMediator _dispatchRWithPipeline;
+    private DispatchR.IMediator _dispatchRWithPipeline;
     private IMediator _mediatRWithPipeline;
     private Mediator.IMediator _mediatSgWithPipeline;
     private static readonly PingStreamDispatchR StaticStreamDispatchR = new();
@@ -49,7 +49,7 @@ public class StreamMediatRVsDispatchWithPipelineRBenchmark
 
         withPipelineServices.AddDispatchR(typeof(PingStreamDispatchR).Assembly);
         var buildServicesWithoutPipeline = withPipelineServices.BuildServiceProvider();
-        _dispatchRWithPipeline = buildServicesWithoutPipeline.CreateScope().ServiceProvider.GetRequiredService<DispatchR.Requests.IMediator>();
+        _dispatchRWithPipeline = buildServicesWithoutPipeline.CreateScope().ServiceProvider.GetRequiredService<DispatchR.IMediator>();
         _mediatRWithPipeline = buildServicesWithoutPipeline.CreateScope().ServiceProvider.GetRequiredService<MediatR.IMediator>();
         _mediatSgWithPipeline = buildServicesWithoutPipeline.CreateScope().ServiceProvider.GetRequiredService<Mediator.IMediator>();
         _serviceScopeForMediatRWithPipeline = buildServicesWithoutPipeline.CreateScope();
@@ -220,7 +220,7 @@ public class StreamMediatRVsDispatchWithPipelineRBenchmark
     {
         var mediator = _serviceScopeForDispatchRWithPipeline
             .ServiceProvider
-            .GetRequiredService<DispatchR.Requests.IMediator>();
+            .GetRequiredService<DispatchR.IMediator>();
         
         var result = 0;
         await foreach (var response in mediator.CreateStream(StaticStreamDispatchR, CancellationToken.None).ConfigureAwait(false))
@@ -323,7 +323,7 @@ public class StreamMediatRVsDispatchWithPipelineRBenchmark
         var result = 0;
         await Parallel.ForEachAsync(ScopesForDispatchRWithPipeline, async (scope, ct) =>
         {
-            var mediator = scope.ServiceProvider.GetRequiredService<DispatchR.Requests.IMediator>();
+            var mediator = scope.ServiceProvider.GetRequiredService<DispatchR.IMediator>();
             await foreach (var response in mediator.CreateStream(StaticStreamDispatchR, CancellationToken.None).ConfigureAwait(false))
             {
                 result = response;

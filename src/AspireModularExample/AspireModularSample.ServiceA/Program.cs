@@ -1,8 +1,7 @@
 using System.Reflection;
 using AspireModularSample.Modules;
+using DispatchR;
 using DispatchR.Extensions;
-using DispatchR.Requests;
-using DispatchR.Requests.Send;
 
 var builder = WebApplication.CreateBuilder(args);
 

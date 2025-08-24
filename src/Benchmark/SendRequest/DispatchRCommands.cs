@@ -1,5 +1,4 @@
-﻿using DispatchR.Requests;
-using DispatchR.Requests.Send;
+﻿using DispatchR.Abstractions.Send;
 
 namespace Benchmark.SendRequest;
 

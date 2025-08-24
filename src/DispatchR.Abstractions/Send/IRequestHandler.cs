@@ -1,6 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 
-namespace DispatchR.Requests.Send;
+namespace DispatchR.Abstractions.Send;
 
 public interface IRequestHandler
 {

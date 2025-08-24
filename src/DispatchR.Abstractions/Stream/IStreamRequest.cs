@@ -1,4 +1,4 @@
-﻿namespace DispatchR.Requests.Stream;
+﻿namespace DispatchR.Abstractions.Stream;
 
 public interface IStreamRequest;
 

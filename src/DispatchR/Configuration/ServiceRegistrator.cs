@@ -1,7 +1,7 @@
-﻿using DispatchR.Requests.Notification;
-using DispatchR.Requests.Send;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using System.Runtime.CompilerServices;
+using DispatchR.Abstractions.Notification;
+using DispatchR.Abstractions.Send;
 
 namespace DispatchR.Configuration
 {

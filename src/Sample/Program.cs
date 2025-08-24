@@ -72,7 +72,7 @@ app.MapGet("/Send/MediatR", (MediatR.IMediator mediatR, CancellationToken cancel
         => mediatR.Send(new MediatRSample.Ping(), cancellationToken))
     .WithName("SendInMediatRWithPipeline");
 
-app.MapGet("/Send/DispatchR", (DispatchR.Requests.IMediator dispatchR, CancellationToken cancellationToken)
+app.MapGet("/Send/DispatchR", (DispatchR.IMediator dispatchR, CancellationToken cancellationToken)
         => dispatchR.Send(new DispatchRSample.Ping(), cancellationToken))
     .WithName("SendInDispatchRWithPipeline");
 
@@ -94,7 +94,7 @@ app.MapGet("/Stream/MediatR", async (MediatR.IMediator mediatR, ILogger<Program>
     return "It works";
 });
 
-app.MapGet("/Stream/DispatchR", async (DispatchR.Requests.IMediator dispatchR, ILogger<Program> logger) =>
+app.MapGet("/Stream/DispatchR", async (DispatchR.IMediator dispatchR, ILogger<Program> logger) =>
 {
     CancellationTokenSource cts = new();
     int count = 0;
@@ -118,7 +118,7 @@ app.MapGet("/Notification/MediatR", async (MediatR.IMediator mediator, ILogger<P
     return "It works";
 });
 
-app.MapGet("/Notification/DispatchR", async (DispatchR.Requests.IMediator mediator, ILogger<Program> logger) =>
+app.MapGet("/Notification/DispatchR", async (DispatchR.IMediator mediator, ILogger<Program> logger) =>
 {
     await mediator.Publish(new DispatchRNotificationSample.MultiHandlersNotification(Guid.Empty), CancellationToken.None);
     return "It works";
