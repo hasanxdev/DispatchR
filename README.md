@@ -1,4 +1,4 @@
-# <img src="./icon-mini.png" width="25">ispatchR 🚀
+# <img src="https://github.com/hasanxdev/DispatchR/raw/main/icon-mini.png" width="26">ispatchR 🚀
 
 ![CI](https://github.com/hasanxdev/DispatchR/workflows/Release/badge.svg)
 [![codecov](https://codecov.io/github/hasanxdev/dispatchr/graph/badge.svg?token=1FUG5DPUOE)](https://codecov.io/github/hasanxdev/dispatchr)
@@ -385,19 +385,19 @@ Version 3 of Mediator Source Generator was excluded due to significantly lower p
 
 ### Send Request
 #### 1. MediatR vs Mediator Source Generator vs DispatchR With Pipeline
-![Benchmark Result](./benchmark/results/with-pipeline-stable.png)
+![Benchmark Result](https://github.com/hasanxdev/DispatchR/raw/main/benchmark/results/with-pipeline-stable.png)
 #### 2. MediatR vs Mediator Source Generator vs DispatchR Without Pipeline
-![Benchmark Result](./benchmark/results/without-pipeline-stable.png)
+![Benchmark Result](https://github.com/hasanxdev/DispatchR/raw/main/benchmark/results/without-pipeline-stable.png)
 
 ### Stream Request
 #### 1. MediatR vs Mediator Source Generator vs DispatchR With Pipeline
-![Benchmark Result](./benchmark/results/stream-with-pipeline-stable.png)
+![Benchmark Result](https://github.com/hasanxdev/DispatchR/raw/main/benchmark/results/stream-with-pipeline-stable.png)
 #### 2. MediatR vs Mediator Source Generator vs DispatchR Without Pipeline
-![Benchmark Result](./benchmark/results/stream-without-pipeline-stable.png)
+![Benchmark Result](https://github.com/hasanxdev/DispatchR/raw/main/benchmark/results/stream-without-pipeline-stable.png)
 
 ### Notification
 #### 1. MediatR vs Mediator Source Generator vs DispatchR
-![Benchmark Result](./benchmark/results/notification-stable.png)
+![Benchmark Result](https://github.com/hasanxdev/DispatchR/raw/main/benchmark/results/notification-stable.png)
 
 ## ✨ Contribute & Help Grow This Package! ✨
 We welcome contributions to make this package even better! ❤️
