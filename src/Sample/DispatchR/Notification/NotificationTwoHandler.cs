@@ -1,4 +1,4 @@
-using DispatchR.Requests.Notification;
+using DispatchR.Abstractions.Notification;
 using Sample.MediatR.Notification;
 
 namespace Sample.DispatchR.Notification;

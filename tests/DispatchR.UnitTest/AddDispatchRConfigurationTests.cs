@@ -1,7 +1,6 @@
+using DispatchR.Abstractions.Stream;
 using DispatchR.Exceptions;
 using DispatchR.Extensions;
-using DispatchR.Requests;
-using DispatchR.Requests.Stream;
 using DispatchR.TestCommon.Fixtures;
 using DispatchR.TestCommon.Fixtures.Notification;
 using DispatchR.TestCommon.Fixtures.SendRequest;

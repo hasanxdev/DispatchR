@@ -1,4 +1,4 @@
-﻿using DispatchR.Requests.Send;
+﻿using DispatchR.Abstractions.Send;
 
 namespace Sample.DispatchR.SendRequest;
 

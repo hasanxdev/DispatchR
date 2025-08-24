@@ -1,12 +1,8 @@
+using DispatchR.Abstractions.Notification;
 using DispatchR.Extensions;
-using DispatchR.Requests;
-using DispatchR.Requests.Notification;
-using DispatchR.Requests.Send;
 using DispatchR.TestCommon.Fixtures;
 using DispatchR.TestCommon.Fixtures.Notification;
-using DispatchR.TestCommon.Fixtures.SendRequest.ValueTask;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection.Extensions;
 using Moq;
 
 namespace DispatchR.IntegrationTest;

@@ -51,9 +51,13 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/v')
         run: echo "version=${GITHUB_REF#refs/tags/v}" >> "$GITHUB_OUTPUT"
 
-      - name: Pack project
+      - name: Pack DispatchR project
         if: startsWith(github.ref, 'refs/tags/v')
         run: dotnet pack src/DispatchR/DispatchR.csproj --configuration Release --no-build -o ./nupkgs /p:PackageVersion=${{ steps.get_version.outputs.version }}
+
+      - name: Pack DispatchR Abstractions project
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: dotnet pack src/DispatchR.Abstractions/DispatchR.Abstractions.csproj --configuration Release --no-build -o ./nupkgs /p:PackageVersion=${{ steps.get_version.outputs.version }}
 
       - name: Push to NuGet
         if: startsWith(github.ref, 'refs/tags/v')

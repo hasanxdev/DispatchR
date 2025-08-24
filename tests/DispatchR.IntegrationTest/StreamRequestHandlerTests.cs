@@ -1,11 +1,7 @@
+using DispatchR.Abstractions.Send;
+using DispatchR.Abstractions.Stream;
 using DispatchR.Extensions;
-using DispatchR.Requests;
-using DispatchR.Requests.Send;
-using DispatchR.Requests.Stream;
 using DispatchR.TestCommon.Fixtures;
-using DispatchR.TestCommon.Fixtures.SendRequest.Sync;
-using DispatchR.TestCommon.Fixtures.SendRequest.Task;
-using DispatchR.TestCommon.Fixtures.SendRequest.ValueTask;
 using DispatchR.TestCommon.Fixtures.StreamRequest;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;

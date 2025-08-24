@@ -1,6 +1,6 @@
 ﻿using System.Runtime.CompilerServices;
 
-namespace DispatchR.Requests.Send;
+namespace DispatchR.Abstractions.Send;
 
 public interface IPipelineBehavior<TRequest, TResponse> : IRequestHandler<TRequest, TResponse> 
     where TRequest : class, IRequest<TRequest, TResponse>

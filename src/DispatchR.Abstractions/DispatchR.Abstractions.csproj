@@ -1,0 +1,27 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFrameworks>net9.0;net8.0;</TargetFrameworks>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <PackageIcon>icon-mini.png</PackageIcon>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
+        <PackageId>DispatchR.Mediator.Abstractions</PackageId>
+        <Authors>hasanxdev</Authors>
+        <Description>
+            A fast, zero-alloc Mediator pattern alternative to MediatR in .NET – minimal, blazing fast, and DI-friendly (Dependency Injection).
+        </Description>
+        <PackageTags>DispatchR;Mediator;MediatR</PackageTags>
+        <PackageProjectUrl>https://github.com/hasanxdev/DispatchR</PackageProjectUrl>
+        <RepositoryUrl>https://github.com/hasanxdev/DispatchR</RepositoryUrl>
+    </PropertyGroup>
+    
+    <ItemGroup>
+        <InternalsVisibleTo Include="DispatchR" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <None Include="..\..\README.md" Pack="true" PackagePath="\" />
+        <None Include="..\..\icon-mini.png" Pack="true" PackagePath="\" />
+    </ItemGroup>
+</Project>

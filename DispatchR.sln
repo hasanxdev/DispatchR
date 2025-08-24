@@ -43,6 +43,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DispatchR.IntegrationTest",
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DispatchR.TestCommon", "tests\DispatchR.TestCommon\DispatchR.TestCommon.csproj", "{F01B6563-64D0-4316-947C-AB75426D9924}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DispatchR.Abstractions", "src\DispatchR.Abstractions\DispatchR.Abstractions.csproj", "{27CFB785-B631-4044-AA90-4B21FA908C0A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -173,6 +175,18 @@ Global
 		{F01B6563-64D0-4316-947C-AB75426D9924}.Release|x64.Build.0 = Release|Any CPU
 		{F01B6563-64D0-4316-947C-AB75426D9924}.Release|x86.ActiveCfg = Release|Any CPU
 		{F01B6563-64D0-4316-947C-AB75426D9924}.Release|x86.Build.0 = Release|Any CPU
+		{27CFB785-B631-4044-AA90-4B21FA908C0A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{27CFB785-B631-4044-AA90-4B21FA908C0A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{27CFB785-B631-4044-AA90-4B21FA908C0A}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{27CFB785-B631-4044-AA90-4B21FA908C0A}.Debug|x64.Build.0 = Debug|Any CPU
+		{27CFB785-B631-4044-AA90-4B21FA908C0A}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{27CFB785-B631-4044-AA90-4B21FA908C0A}.Debug|x86.Build.0 = Debug|Any CPU
+		{27CFB785-B631-4044-AA90-4B21FA908C0A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{27CFB785-B631-4044-AA90-4B21FA908C0A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{27CFB785-B631-4044-AA90-4B21FA908C0A}.Release|x64.ActiveCfg = Release|Any CPU
+		{27CFB785-B631-4044-AA90-4B21FA908C0A}.Release|x64.Build.0 = Release|Any CPU
+		{27CFB785-B631-4044-AA90-4B21FA908C0A}.Release|x86.ActiveCfg = Release|Any CPU
+		{27CFB785-B631-4044-AA90-4B21FA908C0A}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -191,5 +205,6 @@ Global
 		{806030F5-86B1-4EFC-923C-94FF7D32DFC9} = {7F7601D5-C62E-4EA3-8B71-E946A62B4529}
 		{D8646A62-9FE7-4E79-861C-49391007F98A} = {7F7601D5-C62E-4EA3-8B71-E946A62B4529}
 		{F01B6563-64D0-4316-947C-AB75426D9924} = {7F7601D5-C62E-4EA3-8B71-E946A62B4529}
+		{27CFB785-B631-4044-AA90-4B21FA908C0A} = {89F559F6-C217-4D24-9A2F-DF25AE215A7C}
 	EndGlobalSection
 EndGlobal

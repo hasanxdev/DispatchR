@@ -1,10 +1,9 @@
 ﻿using DispatchR.Configuration;
-using DispatchR.Requests;
-using DispatchR.Requests.Notification;
-using DispatchR.Requests.Send;
-using DispatchR.Requests.Stream;
 using Microsoft.Extensions.DependencyInjection;
 using System.Reflection;
+using DispatchR.Abstractions.Notification;
+using DispatchR.Abstractions.Send;
+using DispatchR.Abstractions.Stream;
 using DispatchR.Exceptions;
 
 namespace DispatchR.Extensions;

@@ -4,10 +4,11 @@
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
+		<PackageIcon>icon-mini.png</PackageIcon>
 		<PackageId>DispatchR.Mediator</PackageId>
 		<Authors>hasanxdev</Authors>
 		<Description>
-			Fast, zero-alloc alternative to MediatR for .NET – minimal, blazing fast, and DI-friendly.
+			A fast, zero-alloc Mediator pattern alternative to MediatR in .NET – minimal, blazing fast, and DI-friendly (Dependency Injection).
 		</Description>
 		<PackageTags>DispatchR;Mediator;MediatR</PackageTags>
 		<PackageProjectUrl>https://github.com/hasanxdev/DispatchR</PackageProjectUrl>
@@ -23,5 +24,9 @@
 	</ItemGroup>
 	<ItemGroup>
 		<None Include="..\..\README.md" Pack="true" PackagePath="\" />
+		<None Include="..\..\icon-mini.png" Pack="true" PackagePath="\" />
+	</ItemGroup>
+	<ItemGroup>
+	  <ProjectReference Include="..\DispatchR.Abstractions\DispatchR.Abstractions.csproj" />
 	</ItemGroup>
 </Project>

@@ -1,14 +1,11 @@
-using DispatchR.Configuration;
 using DispatchR.Exceptions;
 using DispatchR.Extensions;
-using DispatchR.Requests;
 using DispatchR.TestCommon.Fixtures;
 using DispatchR.TestCommon.Fixtures.SendRequest;
 using DispatchR.TestCommon.Fixtures.SendRequest.ReusedInScopedLifetime;
 using DispatchR.TestCommon.Fixtures.SendRequest.Sync;
 using DispatchR.TestCommon.Fixtures.SendRequest.Task;
 using DispatchR.TestCommon.Fixtures.SendRequest.ValueTask;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace DispatchR.UnitTest;

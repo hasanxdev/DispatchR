@@ -15,7 +15,7 @@ public class NotificationBenchmarks
     private IServiceProvider _serviceProvider;
     private IServiceScope _serviceScope;
     private Mediator.IMediator _mediator;
-    private DispatchR.Requests.IMediator _dispatchR;
+    private DispatchR.IMediator _dispatchR;
     private Mediator.Mediator _concreteMediator;
     private MediatR.IMediator _mediatr;
     private SingleHandler.SingleHandler _singleHandler;
@@ -59,7 +59,7 @@ public class NotificationBenchmarks
         _serviceProvider = _serviceScope.ServiceProvider;
 
         _mediator = _serviceProvider.GetRequiredService<Mediator.IMediator>();
-        _dispatchR = _serviceProvider.GetRequiredService<DispatchR.Requests.IMediator>();
+        _dispatchR = _serviceProvider.GetRequiredService<DispatchR.IMediator>();
         _concreteMediator = _serviceProvider.GetRequiredService<Mediator.Mediator>();
         _mediatr = _serviceProvider.GetRequiredService<MediatR.IMediator>();
 

@@ -1,7 +1,7 @@
 ﻿using System.Runtime.CompilerServices;
-using DispatchR.Requests.Send;
+using DispatchR.Abstractions.Send;
 
-namespace DispatchR.Requests.Stream;
+namespace DispatchR.Abstractions.Stream;
 
 public interface IStreamPipelineBehavior<TRequest, TResponse> : IStreamRequestHandler<TRequest, TResponse> 
     where TRequest : class, IStreamRequest<TRequest, TResponse>
