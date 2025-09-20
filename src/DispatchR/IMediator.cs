@@ -17,6 +17,21 @@ public interface IMediator
 
     ValueTask Publish<TNotification>(TNotification request, CancellationToken cancellationToken)
         where TNotification : INotification;
+    
+    /// <summary>
+    /// This method is not recommended for performance-critical scenarios.  
+    /// Use it only if it is strictly necessary, as its performance is lower compared  
+    /// to similar methods in terms of both memory usage and CPU consumption.  
+    /// </summary>
+    /// <param name="request">
+    /// An object that implements INotification
+    /// </param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    [Obsolete(message: "This method has performance issues. Use only if strictly necessary", 
+        error: false, 
+        DiagnosticId = Constants.DiagnosticPerformanceIssue)]
+    ValueTask Publish(object request, CancellationToken cancellationToken);
 }
 
 public sealed class Mediator(IServiceProvider serviceProvider) : IMediator
@@ -35,17 +50,18 @@ public sealed class Mediator(IServiceProvider serviceProvider) : IMediator
         }
     }
 
-    public IAsyncEnumerable<TResponse> CreateStream<TRequest, TResponse>(IStreamRequest<TRequest, TResponse> request, 
+    public IAsyncEnumerable<TResponse> CreateStream<TRequest, TResponse>(IStreamRequest<TRequest, TResponse> request,
         CancellationToken cancellationToken) where TRequest : class, IStreamRequest
     {
         return serviceProvider.GetRequiredService<IStreamRequestHandler<TRequest, TResponse>>()
             .Handle(Unsafe.As<TRequest>(request), cancellationToken);
     }
 
-    public async ValueTask Publish<TNotification>(TNotification request, CancellationToken cancellationToken) where TNotification : INotification
+    public async ValueTask Publish<TNotification>(TNotification request, CancellationToken cancellationToken)
+        where TNotification : INotification
     {
         var notificationsInDi = serviceProvider.GetRequiredService<IEnumerable<INotificationHandler<TNotification>>>();
-        
+
         var notifications = Unsafe.As<INotificationHandler<TNotification>[]>(notificationsInDi);
         foreach (var notification in notifications)
         {
@@ -54,6 +70,28 @@ public sealed class Mediator(IServiceProvider serviceProvider) : IMediator
             {
                 await valueTask;
             }
+        }
+    }
+
+    public async ValueTask Publish(object request, CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+
+        var requestType = request.GetType();
+        var handlerType = typeof(INotificationHandler<>).MakeGenericType(requestType);
+
+        var notificationsInDi = serviceProvider.GetServices(handlerType);
+
+        foreach (var handler in notificationsInDi)
+        {
+            var handleMethod = handlerType.GetMethod(nameof(INotificationHandler<INotification>.Handle));
+            ArgumentNullException.ThrowIfNull(handleMethod);
+
+            var valueTask = (ValueTask?)handleMethod.Invoke(handler, [request, cancellationToken]);
+            ArgumentNullException.ThrowIfNull(valueTask);
+
+            if (!valueTask.Value.IsCompletedSuccessfully)
+                await valueTask.Value;
         }
     }
 }
