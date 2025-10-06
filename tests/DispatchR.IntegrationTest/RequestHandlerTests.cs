@@ -1,6 +1,8 @@
 using DispatchR.Abstractions.Send;
 using DispatchR.Extensions;
 using DispatchR.TestCommon.Fixtures;
+using DispatchR.TestCommon.Fixtures.SendRequest;
+using DispatchR.TestCommon.Fixtures.SendRequest.Task;
 using DispatchR.TestCommon.Fixtures.SendRequest.ValueTask;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -53,5 +55,27 @@ public class RequestHandlerTests
         Assert.Equal(1, result);
         spyPipelineOneMock.Verify(p => p.Handle(It.IsAny<PingValueTask>(), It.IsAny<CancellationToken>()), Times.Exactly(1));
         spyPipelineTwoMock.Verify(p => p.Handle(It.IsAny<PingValueTask>(), It.IsAny<CancellationToken>()), Times.Exactly(1));
+    }
+
+    [Fact]
+    public void RegisterHandlers_SingleClassWithMultipleRequestInterfaces_ResolvesAllHandlers()
+    {
+        // Arrange
+        var services = new ServiceCollection();
+        services.AddDispatchR(cfg =>
+        {
+            cfg.Assemblies.Add(typeof(Fixture).Assembly);
+            cfg.RegisterPipelines = false;
+        });
+
+        var serviceProvider = services.BuildServiceProvider();
+
+        // Act
+        var handlers1 = serviceProvider.GetServices<IRequestHandler<PingTask, Task<int>>>();
+        var handlers2 = serviceProvider.GetServices<IRequestHandler<PingValueTask, ValueTask<int>>>();
+
+        // Assert
+        Assert.Contains(handlers1, h => h is MultiRequestHandler);
+        Assert.Contains(handlers2, h => h is MultiRequestHandler);
     }
 }

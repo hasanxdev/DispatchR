@@ -11,143 +11,154 @@ namespace DispatchR.Configuration
             Type requestHandlerType, Type pipelineBehaviorType, Type streamRequestHandlerType,
             Type streamPipelineBehaviorType, bool withPipelines, List<Type>? pipelineOrder = null)
         {
+            var handlerTypes = new[] { requestHandlerType, streamRequestHandlerType };
+            var pipelineTypes = new[] { pipelineBehaviorType, streamPipelineBehaviorType };
+
             var allHandlers = allTypes
-                .Where(p =>
+                .Where(type =>
                 {
-                    var @interface = p.GetInterfaces().First(i => i.IsGenericType);
-                    return new[] { requestHandlerType, streamRequestHandlerType }
-                        .Contains(@interface.GetGenericTypeDefinition());
-                }).ToList();
+                    var genericInterfaces = type.GetInterfaces()
+                        .Where(i => i.IsGenericType)
+                        .Select(i => i.GetGenericTypeDefinition())
+                        .ToList();
+
+                    return genericInterfaces.Intersect(handlerTypes).Any() &&
+                           !genericInterfaces.Intersect(pipelineTypes).Any();
+                })
+                .ToList();
 
             var allPipelines = allTypes
-                .Where(p =>
-                {
-                    var @interface = p.GetInterfaces().First(i => i.IsGenericType);
-                    return new[] { pipelineBehaviorType, streamPipelineBehaviorType }
-                        .Contains(@interface.GetGenericTypeDefinition());
-                }).ToList();
+                .Where(type => type.GetInterfaces()
+                    .Where(i => i.IsGenericType)
+                    .Select(i => i.GetGenericTypeDefinition())
+                    .Intersect(pipelineTypes)
+                    .Any())
+                .ToList();
 
             foreach (var handler in allHandlers)
             {
-                object key = handler.GUID;
-                var handlerType = requestHandlerType;
-                var behaviorType = pipelineBehaviorType;
+                var handlerInterfaces = handler.GetInterfaces()
+                    .Where(p => p.IsGenericType && handlerTypes.Contains(p.GetGenericTypeDefinition()))
+                    .ToList();
 
-                var isStream = handler.GetInterfaces()
-                    .Any(p => p.IsGenericType && p.GetGenericTypeDefinition() == streamRequestHandlerType);
-                if (isStream)
+                foreach (var handlerInterface in handlerInterfaces)
                 {
-                    handlerType = streamRequestHandlerType;
-                    behaviorType = streamPipelineBehaviorType;
-                }
+                    object key = Guid.NewGuid();
+                    var handlerType = requestHandlerType;
+                    var behaviorType = pipelineBehaviorType;
 
-                services.AddKeyedScoped(typeof(IRequestHandler), key, handler);
-
-                var handlerInterface = handler.GetInterfaces()
-                    .First(p => p.IsGenericType && p.GetGenericTypeDefinition() == handlerType);
-
-                // find pipelines
-                if (withPipelines)
-                {
-                    var pipelines = allPipelines
-                        .Where(p =>
-                        {
-                            var interfaces = p.GetInterfaces();
-                            if (p.IsGenericType)
-                            {
-                                // handle generic pipelines
-                                return interfaces
-                                           .FirstOrDefault(inter =>
-                                               inter.IsGenericType &&
-                                               inter.GetGenericTypeDefinition() == behaviorType)
-                                           ?.GetInterfaces().First().GetGenericTypeDefinition() ==
-                                       handlerInterface.GetGenericTypeDefinition();
-                            }
-
-                            return interfaces
-                                .FirstOrDefault(inter =>
-                                    inter.IsGenericType &&
-                                    inter.GetGenericTypeDefinition() == behaviorType)
-                                ?.GetInterfaces().First() == handlerInterface;
-                        }).ToList();
-
-                    // Sort pipelines by the specified order passed via ConfigurationOptions
-                    if (pipelineOrder is { Count: > 0 })
+                    var isStream = handlerInterface.GetGenericTypeDefinition() == streamRequestHandlerType;
+                    if (isStream)
                     {
-                        pipelines = pipelines
-                            .OrderBy(p =>
-                            {
-                                var idx = pipelineOrder.IndexOf(p);
-                                return idx == -1 ? int.MaxValue : idx;
-                            })
-                            .ToList();
-                        pipelines.Reverse();
+                        handlerType = streamRequestHandlerType;
+                        behaviorType = streamPipelineBehaviorType;
                     }
 
-                    foreach (var pipeline in pipelines)
+                    services.AddKeyedScoped(typeof(IRequestHandler), key, handler);
+
+                    // find pipelines
+                    if (withPipelines)
                     {
-                        if (pipeline.IsGenericType)
+                        var pipelines = allPipelines
+                            .Where(p =>
+                            {
+                                var interfaces = p.GetInterfaces();
+                                if (p.IsGenericType)
+                                {
+                                    // handle generic pipelines
+                                    return interfaces
+                                               .FirstOrDefault(inter =>
+                                                   inter.IsGenericType &&
+                                                   inter.GetGenericTypeDefinition() == behaviorType)
+                                               ?.GetInterfaces().First().GetGenericTypeDefinition() ==
+                                           handlerInterface.GetGenericTypeDefinition();
+                                }
+
+                                return interfaces
+                                    .FirstOrDefault(inter =>
+                                        inter.IsGenericType &&
+                                        inter.GetGenericTypeDefinition() == behaviorType)
+                                    ?.GetInterfaces().First() == handlerInterface;
+                            }).ToList();
+
+                        // Sort pipelines by the specified order passed via ConfigurationOptions
+                        if (pipelineOrder is { Count: > 0 })
                         {
-                            var genericHandlerResponseType = pipeline.GetInterfaces().First(inter =>
-                                inter.IsGenericType &&
-                                inter.GetGenericTypeDefinition() == behaviorType).GenericTypeArguments[1];
+                            pipelines = pipelines
+                                .OrderBy(p =>
+                                {
+                                    var idx = pipelineOrder.IndexOf(p);
+                                    return idx == -1 ? int.MaxValue : idx;
+                                })
+                                .ToList();
+                            pipelines.Reverse();
+                        }
 
-                            var genericHandlerResponseIsAwaitable = IsAwaitable(genericHandlerResponseType);
-                            var handlerResponseTypeIsAwaitable = IsAwaitable(handlerInterface.GenericTypeArguments[1]);
-                            if (genericHandlerResponseIsAwaitable ^ handlerResponseTypeIsAwaitable)
+                        foreach (var pipeline in pipelines)
+                        {
+                            if (pipeline.IsGenericType)
                             {
-                                continue;
-                            }
+                                var genericHandlerResponseType = pipeline.GetInterfaces().First(inter =>
+                                    inter.IsGenericType &&
+                                    inter.GetGenericTypeDefinition() == behaviorType).GenericTypeArguments[1];
 
-                            var responseTypeArg = handlerInterface.GenericTypeArguments[1];
-                            if (genericHandlerResponseIsAwaitable && handlerResponseTypeIsAwaitable)
-                            {
-                                var areGenericTypeArgumentsInHandlerInterfaceMismatched =
-                                    genericHandlerResponseType.IsGenericType &&
-                                    handlerInterface.GenericTypeArguments[1].IsGenericType &&
-                                    genericHandlerResponseType.GetGenericTypeDefinition() !=
-                                    handlerInterface.GenericTypeArguments[1].GetGenericTypeDefinition();
-                                
-                                if (areGenericTypeArgumentsInHandlerInterfaceMismatched ||
-                                    genericHandlerResponseType.IsGenericType ^
-                                    handlerInterface.GenericTypeArguments[1].IsGenericType)
+                                var genericHandlerResponseIsAwaitable = IsAwaitable(genericHandlerResponseType);
+                                var handlerResponseTypeIsAwaitable = IsAwaitable(handlerInterface.GenericTypeArguments[1]);
+                                if (genericHandlerResponseIsAwaitable ^ handlerResponseTypeIsAwaitable)
                                 {
                                     continue;
                                 }
 
-                                // register async generic pipelines
-                                if (responseTypeArg.GenericTypeArguments.Any())
+                                var responseTypeArg = handlerInterface.GenericTypeArguments[1];
+                                if (genericHandlerResponseIsAwaitable && handlerResponseTypeIsAwaitable)
                                 {
-                                    responseTypeArg = responseTypeArg.GenericTypeArguments[0];
+                                    var areGenericTypeArgumentsInHandlerInterfaceMismatched =
+                                        genericHandlerResponseType.IsGenericType &&
+                                        handlerInterface.GenericTypeArguments[1].IsGenericType &&
+                                        genericHandlerResponseType.GetGenericTypeDefinition() !=
+                                        handlerInterface.GenericTypeArguments[1].GetGenericTypeDefinition();
+
+                                    if (areGenericTypeArgumentsInHandlerInterfaceMismatched ||
+                                        genericHandlerResponseType.IsGenericType ^
+                                        handlerInterface.GenericTypeArguments[1].IsGenericType)
+                                    {
+                                        continue;
+                                    }
+
+                                    // register async generic pipelines
+                                    if (responseTypeArg.GenericTypeArguments.Any())
+                                    {
+                                        responseTypeArg = responseTypeArg.GenericTypeArguments[0];
+                                    }
                                 }
+
+                                var closedGenericType = pipeline.MakeGenericType(handlerInterface.GenericTypeArguments[0],
+                                    responseTypeArg);
+                                services.AddKeyedScoped(typeof(IRequestHandler), key, closedGenericType);
                             }
-
-                            var closedGenericType = pipeline.MakeGenericType(handlerInterface.GenericTypeArguments[0],
-                                responseTypeArg);
-                            services.AddKeyedScoped(typeof(IRequestHandler), key, closedGenericType);
-                        }
-                        else
-                        {
-                            services.AddKeyedScoped(typeof(IRequestHandler), key, pipeline);
+                            else
+                            {
+                                services.AddKeyedScoped(typeof(IRequestHandler), key, pipeline);
+                            }
                         }
                     }
-                }
 
-                services.AddScoped(handlerInterface, sp =>
-                {
-                    var pipelinesWithHandler = Unsafe
-                        .As<IRequestHandler[]>(sp.GetKeyedServices<IRequestHandler>(key));
-
-                    IRequestHandler lastPipeline = pipelinesWithHandler[0];
-                    for (int i = 1; i < pipelinesWithHandler.Length; i++)
+                    services.AddScoped(handlerInterface, sp =>
                     {
-                        var pipeline = pipelinesWithHandler[i];
-                        pipeline.SetNext(lastPipeline);
-                        lastPipeline = pipeline;
-                    }
+                        var pipelinesWithHandler = Unsafe
+                            .As<IRequestHandler[]>(sp.GetKeyedServices<IRequestHandler>(key));
 
-                    return lastPipeline;
-                });
+                        IRequestHandler lastPipeline = pipelinesWithHandler[0];
+                        for (int i = 1; i < pipelinesWithHandler.Length; i++)
+                        {
+                            var pipeline = pipelinesWithHandler[i];
+                            pipeline.SetNext(lastPipeline);
+                            lastPipeline = pipeline;
+                        }
+
+                        return lastPipeline;
+                    });
+                }
             }
         }
 
@@ -155,34 +166,14 @@ namespace DispatchR.Configuration
             Type syncNotificationHandlerType)
         {
             var allNotifications = allTypes
-                .Where(p =>
-                {
-                    return p.GetInterfaces()
-                        .Where(i => i.IsGenericType)
-                        .Select(i => i.GetGenericTypeDefinition())
-                        .Any(i => new[]
-                        {
-                            syncNotificationHandlerType
-                        }.Contains(i));
-                })
-                .GroupBy(p =>
-                {
-                    var @interface = p.GetInterfaces()
-                        .Where(i => i.IsGenericType)
-                        .First(i => new[]
-                        {
-                            syncNotificationHandlerType
-                        }.Contains(i.GetGenericTypeDefinition()));
-                    return @interface.GenericTypeArguments.First();
-                })
+                .SelectMany(handlerType => handlerType.GetInterfaces()
+                    .Where(i => i.IsGenericType && syncNotificationHandlerType == i.GetGenericTypeDefinition())
+                    .Select(i => new { HandlerType = handlerType, Interface = i }))
                 .ToList();
 
             foreach (var notification in allNotifications)
             {
-                foreach (var types in notification.ToList())
-                {
-                    services.AddScoped(typeof(INotificationHandler<>).MakeGenericType(notification.Key), types);
-                }
+                services.AddScoped(notification.Interface, notification.HandlerType);
             }
         }
 

@@ -50,30 +50,24 @@ public static class ServiceCollectionExtensions
         var streamPipelineBehaviorType = typeof(IStreamPipelineBehavior<,>);
         var syncNotificationHandlerType = typeof(INotificationHandler<>);
 
+        var otherHandlerTypes = new HashSet<Type>()
+        {
+            pipelineBehaviorType,
+            streamRequestHandlerType,
+            streamPipelineBehaviorType,
+            syncNotificationHandlerType
+        };
+
         var allTypes = configurationOptions.Assemblies.SelectMany(x => x.GetTypes()).Distinct()
             .Where(p =>
-            {
-                var interfaces = p.GetInterfaces();
-                return interfaces.Length >= 1 &&
+                p.GetInterfaces() is { Length: >= 1 } interfaces &&
                        interfaces
                            .Where(i => i.IsGenericType)
                            .Select(i => i.GetGenericTypeDefinition())
-                           .Any(i =>
-                           {
-                               if (i == requestHandlerType)
-                               {
-                                   return configurationOptions.IsHandlerIncluded(p);
-                               }
-
-                               return new[]
-                               {
-                                   pipelineBehaviorType,
-                                   streamRequestHandlerType,
-                                   streamPipelineBehaviorType,
-                                   syncNotificationHandlerType
-                               }.Contains(i);
-                           });
-            }).ToList();
+                    .Any(i => i == requestHandlerType
+                        ? configurationOptions.IsHandlerIncluded(p)
+                        : otherHandlerTypes.Contains(i)))
+            .ToList();
 
         if (configurationOptions.RegisterNotifications)
         {
