@@ -190,13 +190,57 @@ public class RequestHandlerTests
         var serviceProvider = services.BuildServiceProvider();
         var scope = serviceProvider.CreateScope();
         var mediator = scope.ServiceProvider.GetRequiredService<IMediator>();
-        
+
         // Act
         var first = mediator.Send(new RequestReusedInScopedLifetime(), CancellationToken.None);
         var second = mediator.Send(new RequestReusedInScopedLifetime(), CancellationToken.None);
         var third = mediator.Send(new RequestReusedInScopedLifetime(), CancellationToken.None);
-        
+
         // Assert
         Assert.Equal(3, first + second + third);
+    }
+
+    [Fact]
+    public void Send_ReturnsSingleHandler_WhenNoPipelinesAreRegistered()
+    {
+        // Arrange
+        var services = new ServiceCollection();
+        services.AddDispatchR(cfg =>
+        {
+            cfg.Assemblies.Add(typeof(Fixture).Assembly);
+            cfg.RegisterPipelines = false;
+            cfg.RegisterNotifications = false;
+            cfg.IncludeHandlers = [typeof(PingHandler)];
+        });
+        var serviceProvider = services.BuildServiceProvider();
+        var mediator = serviceProvider.GetRequiredService<IMediator>();
+
+        // Act
+        var result = mediator.Send(new Ping(), CancellationToken.None);
+
+        // Assert
+        Assert.Equal(1, result);
+    }
+
+    [Fact]
+    public async Task Send_ReturnsSingleHandler_WhenOnlyOneHandlerExistsWithPipelinesEnabled()
+    {
+        // Arrange
+        var services = new ServiceCollection();
+        services.AddDispatchR(cfg =>
+        {
+            cfg.Assemblies.Add(typeof(Fixture).Assembly);
+            cfg.RegisterPipelines = true;
+            cfg.RegisterNotifications = false;
+            cfg.IncludeHandlers = [typeof(PingTaskHandler)]; // Handler without pipeline behaviors
+        });
+        var serviceProvider = services.BuildServiceProvider();
+        var mediator = serviceProvider.GetRequiredService<IMediator>();
+
+        // Act
+        var result = await mediator.Send(new PingTask(), CancellationToken.None);
+
+        // Assert
+        Assert.Equal(1, result);
     }
 }
