@@ -125,6 +125,14 @@ namespace DispatchR.Configuration
                                         continue;
                                     }
 
+                                    // If both are non-generic (Task vs ValueTask), then compare directly
+                                    if (!responseTypeArg.GenericTypeArguments.Any() &&
+                                        !genericHandlerResponseType.GenericTypeArguments.Any() &&
+                                        responseTypeArg != genericHandlerResponseType)
+                                    {
+                                        continue; // Task != ValueTask, so skip
+                                    }
+
                                     // register async generic pipelines
                                     if (responseTypeArg.GenericTypeArguments.Any())
                                     {
