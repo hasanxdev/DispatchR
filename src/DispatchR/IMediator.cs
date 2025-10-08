@@ -1,9 +1,9 @@
-﻿using System.Runtime.CompilerServices;
-using DispatchR.Abstractions.Notification;
+﻿using DispatchR.Abstractions.Notification;
 using DispatchR.Abstractions.Send;
 using DispatchR.Abstractions.Stream;
 using DispatchR.Exceptions;
 using Microsoft.Extensions.DependencyInjection;
+using System.Runtime.CompilerServices;
 
 namespace DispatchR;
 
@@ -17,7 +17,7 @@ public interface IMediator
 
     ValueTask Publish<TNotification>(TNotification request, CancellationToken cancellationToken)
         where TNotification : INotification;
-    
+
     /// <summary>
     /// This method is not recommended for performance-critical scenarios.  
     /// Use it only if it is strictly necessary, as its performance is lower compared  
@@ -28,8 +28,8 @@ public interface IMediator
     /// </param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    [Obsolete(message: "This method has performance issues. Use only if strictly necessary", 
-        error: false, 
+    [Obsolete(message: "This method has performance issues. Use only if strictly necessary",
+        error: false,
         DiagnosticId = Constants.DiagnosticPerformanceIssue)]
     ValueTask Publish(object request, CancellationToken cancellationToken);
 }
@@ -60,13 +60,29 @@ public sealed class Mediator(IServiceProvider serviceProvider) : IMediator
     public async ValueTask Publish<TNotification>(TNotification request, CancellationToken cancellationToken)
         where TNotification : INotification
     {
-        var notificationsInDi = serviceProvider.GetRequiredService<IEnumerable<INotificationHandler<TNotification>>>();
+        var handlers = serviceProvider.GetRequiredService<IEnumerable<INotificationHandler<TNotification>>>();
 
-        var notifications = Unsafe.As<INotificationHandler<TNotification>[]>(notificationsInDi);
-        foreach (var notification in notifications)
+        if (handlers is INotificationHandler<TNotification>[] handlerArray)
         {
-            var valueTask = notification.Handle(request, cancellationToken);
-            if (valueTask.IsCompletedSuccessfully is false)
+            foreach (var handler in handlerArray)
+            {
+                await ProcessHandlerAsync(handler);
+            }
+        }
+        else
+        {
+            foreach (var handler in handlers)
+            {
+                await ProcessHandlerAsync(handler);
+            }
+        }
+
+        return;
+
+        async ValueTask ProcessHandlerAsync(INotificationHandler<TNotification> handler)
+        {
+            var valueTask = handler.Handle(request, cancellationToken);
+            if (!valueTask.IsCompletedSuccessfully)
             {
                 await valueTask;
             }
