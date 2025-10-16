@@ -1,7 +1,5 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-using System.Runtime.CompilerServices;
-using DispatchR.Abstractions.Notification;
-using DispatchR.Abstractions.Send;
+﻿using DispatchR.Abstractions.Send;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace DispatchR.Configuration
 {
@@ -153,11 +151,21 @@ namespace DispatchR.Configuration
 
                     services.AddScoped(handlerInterface, sp =>
                     {
-                        var pipelinesWithHandler = Unsafe
-                            .As<IRequestHandler[]>(sp.GetKeyedServices<IRequestHandler>(key));
+                        var keyedServices = sp.GetKeyedServices<IRequestHandler>(key);
+
+                        IReadOnlyList<IRequestHandler> pipelinesWithHandler = keyedServices switch
+                        {
+                            IRequestHandler[] asArray => asArray,
+                            IReadOnlyList<IRequestHandler> asList => asList,
+                            _ => keyedServices.ToArray()
+                        };
+
+                        // Single handler - no pipeline chaining needed
+                        if (pipelinesWithHandler.Count == 1)
+                            return pipelinesWithHandler[0];
 
                         IRequestHandler lastPipeline = pipelinesWithHandler[0];
-                        for (int i = 1; i < pipelinesWithHandler.Length; i++)
+                        for (var i = 1; i < pipelinesWithHandler.Count; i++)
                         {
                             var pipeline = pipelinesWithHandler[i];
                             pipeline.SetNext(lastPipeline);
