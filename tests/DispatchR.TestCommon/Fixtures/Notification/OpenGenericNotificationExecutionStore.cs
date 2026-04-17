@@ -2,22 +2,17 @@ using System.Collections.Concurrent;
 
 namespace DispatchR.TestCommon.Fixtures.Notification;
 
-public static class OpenGenericNotificationExecutionStore
+public sealed class OpenGenericNotificationExecutionStore
 {
-    private static readonly ConcurrentDictionary<string, int> Counters = new();
+    private readonly ConcurrentDictionary<string, int> _counters = new();
 
-    public static void Reset()
+    public void Increment(string key)
     {
-        Counters.Clear();
+        _counters.AddOrUpdate(key, 1, (_, current) => current + 1);
     }
 
-    public static void Increment(string key)
+    public int Count(string key)
     {
-        Counters.AddOrUpdate(key, 1, (_, current) => current + 1);
-    }
-
-    public static int Count(string key)
-    {
-        return Counters.TryGetValue(key, out var count) ? count : 0;
+        return _counters.TryGetValue(key, out var count) ? count : 0;
     }
 }

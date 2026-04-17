@@ -240,7 +240,7 @@ public class AddDispatchRConfigurationTests
     }
 
     [Fact]
-    public void AddDispatchR_RegisterNotifications_RegisterOpenGenericNotificationHandler()
+    public void AddDispatchR_RegisterNotifications_IncludesOpenGenericNotificationHandler()
     {
         // Arrange
         var services = new ServiceCollection();
