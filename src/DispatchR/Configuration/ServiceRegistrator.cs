@@ -181,7 +181,16 @@ namespace DispatchR.Configuration
 
             foreach (var notification in allNotifications)
             {
-                services.AddScoped(notification.Interface, notification.HandlerType);
+                var serviceType = notification.Interface;
+                var implementationType = notification.HandlerType;
+
+                if (serviceType.ContainsGenericParameters)
+                {
+                    serviceType = serviceType.GetGenericTypeDefinition();
+                    implementationType = implementationType.GetGenericTypeDefinition();
+                }
+
+                services.AddScoped(serviceType, implementationType);
             }
         }
 
