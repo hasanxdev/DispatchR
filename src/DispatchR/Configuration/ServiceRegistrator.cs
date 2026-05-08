@@ -186,12 +186,7 @@ namespace DispatchR.Configuration
 
                 if (serviceType.ContainsGenericParameters)
                 {
-                    serviceType = serviceType.IsGenericTypeDefinition
-                        ? serviceType
-                        : serviceType.GetGenericTypeDefinition();
-                    implementationType = implementationType.IsGenericTypeDefinition
-                        ? implementationType
-                        : implementationType.GetGenericTypeDefinition();
+                    serviceType = serviceType.GetGenericTypeDefinition();
                 }
 
                 services.AddScoped(serviceType, implementationType);
