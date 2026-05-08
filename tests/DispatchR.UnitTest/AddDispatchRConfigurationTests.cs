@@ -1,3 +1,4 @@
+using DispatchR.Abstractions.Notification;
 using DispatchR.Abstractions.Stream;
 using DispatchR.Exceptions;
 using DispatchR.Extensions;
@@ -236,5 +237,31 @@ public class AddDispatchRConfigurationTests
                  p.ImplementationType == typeof(NotificationThreeHandler)));
         
         Assert.Equal(3, countOfAllSimpleHandlers);
+    }
+
+    [Fact]
+    public void AddDispatchR_RegisterNotifications_IncludesOpenGenericNotificationHandler()
+    {
+        // Arrange
+        var services = new ServiceCollection();
+
+        // Act
+        services.AddDispatchR(cfg =>
+        {
+            cfg.Assemblies.Add(typeof(Fixture).Assembly);
+            cfg.RegisterPipelines = false;
+            cfg.RegisterNotifications = true;
+        });
+
+        // Assert
+        var openGenericHandler = services.SingleOrDefault(p =>
+            p.IsKeyedService is false &&
+            p.ServiceType.IsGenericTypeDefinition &&
+            p.ServiceType == typeof(INotificationHandler<>) &&
+            p.ImplementationType is not null &&
+            p.ImplementationType.IsGenericTypeDefinition &&
+            p.ImplementationType == typeof(OpenGenericNotificationHandler<>));
+
+        Assert.NotNull(openGenericHandler);
     }
 }

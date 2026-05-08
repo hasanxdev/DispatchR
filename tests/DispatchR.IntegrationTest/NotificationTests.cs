@@ -103,4 +103,77 @@ public class NotificationTests
         Assert.Contains(handlers1, h => h is MultiNotificationHandler);
         Assert.Contains(handlers2, h => h is MultiNotificationHandler);
     }
+
+    [Fact]
+    public async Task Publish_CallsOpenGenericAndSpecificHandlers_WhenBothAreRegistered()
+    {
+        // Arrange
+        var services = new ServiceCollection();
+        services.AddSingleton<OpenGenericNotificationExecutionStore>();
+        services.AddDispatchR(cfg =>
+        {
+            cfg.Assemblies.Add(typeof(Fixture).Assembly);
+            cfg.RegisterPipelines = false;
+            cfg.RegisterNotifications = true;
+        });
+        var serviceProvider = services.BuildServiceProvider();
+        var mediator = serviceProvider.GetRequiredService<IMediator>();
+        var executionStore = serviceProvider.GetRequiredService<OpenGenericNotificationExecutionStore>();
+
+        // Act
+        await mediator.Publish(new OpenGenericTargetNotification(Guid.NewGuid()), CancellationToken.None);
+
+        // Assert
+        Assert.Equal(1, executionStore.Count($"generic:{nameof(OpenGenericTargetNotification)}"));
+        Assert.Equal(1, executionStore.Count($"specific:{nameof(OpenGenericTargetNotification)}"));
+    }
+
+    [Fact]
+    public async Task PublishObject_CallsOpenGenericAndSpecificHandlers_WhenBothAreRegistered()
+    {
+        // Arrange
+        var services = new ServiceCollection();
+        services.AddSingleton<OpenGenericNotificationExecutionStore>();
+        services.AddDispatchR(cfg =>
+        {
+            cfg.Assemblies.Add(typeof(Fixture).Assembly);
+            cfg.RegisterPipelines = false;
+            cfg.RegisterNotifications = true;
+        });
+        var serviceProvider = services.BuildServiceProvider();
+        var mediator = serviceProvider.GetRequiredService<IMediator>();
+        var executionStore = serviceProvider.GetRequiredService<OpenGenericNotificationExecutionStore>();
+
+        // Act
+        object notificationObject = new OpenGenericTargetNotification(Guid.NewGuid());
+        await mediator.Publish(notificationObject, CancellationToken.None);
+
+        // Assert
+        Assert.Equal(1, executionStore.Count($"generic:{nameof(OpenGenericTargetNotification)}"));
+        Assert.Equal(1, executionStore.Count($"specific:{nameof(OpenGenericTargetNotification)}"));
+    }
+
+    [Fact]
+    public async Task Publish_CallsOpenGenericHandler_WhenNoSpecificHandlerExists()
+    {
+        // Arrange
+        var services = new ServiceCollection();
+        services.AddSingleton<OpenGenericNotificationExecutionStore>();
+        services.AddDispatchR(cfg =>
+        {
+            cfg.Assemblies.Add(typeof(Fixture).Assembly);
+            cfg.RegisterPipelines = false;
+            cfg.RegisterNotifications = true;
+        });
+        var serviceProvider = services.BuildServiceProvider();
+        var mediator = serviceProvider.GetRequiredService<IMediator>();
+        var executionStore = serviceProvider.GetRequiredService<OpenGenericNotificationExecutionStore>();
+
+        // Act
+        await mediator.Publish(new OpenGenericOnlyNotification(Guid.NewGuid()), CancellationToken.None);
+
+        // Assert
+        Assert.Equal(1, executionStore.Count($"generic:{nameof(OpenGenericOnlyNotification)}"));
+        Assert.Equal(0, executionStore.Count($"specific:{nameof(OpenGenericOnlyNotification)}"));
+    }
 }
