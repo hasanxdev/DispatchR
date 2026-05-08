@@ -124,6 +124,16 @@ app.MapGet("/Notification/DispatchR", async (DispatchR.IMediator mediator, ILogg
     return "It works";
 });
 
+// Demonstrates open-generic INotificationHandler<TNotification>:
+// AllNotificationsLogger<TNotification> is registered once and handles every INotification.
+// GenericAwareNotification is handled by both its own specific handler (if any) and the generic one.
+app.MapGet("/Notification/DispatchR/Generic", async (DispatchR.IMediator mediator, ILogger<Program> logger) =>
+{
+    var notification = new DispatchRNotificationSample.GenericAwareNotification(Guid.NewGuid(), "Hello from open-generic handler!");
+    await mediator.Publish(notification, CancellationToken.None);
+    return "It works";
+});
+
 app.Run();
 
 namespace Sample
