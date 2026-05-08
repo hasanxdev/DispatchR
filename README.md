@@ -31,6 +31,7 @@
     3. Notifications:
         1. `INotification`
         2. `INotificationHandler<TRequestEvent>`
+        3. Open-generic `INotificationHandler<TNotification> where TNotification : INotification`
 > :bulb: **Tip:** *If you're looking for a mediator with the raw performance of hand-written code, DispatchR is built for you.*
 
 ## ✨ How to install?
@@ -61,6 +62,9 @@ public sealed class PingMediatR : IRequest<int> { }
 ```csharp
 public sealed class PingDispatchR : IRequest<PingDispatchR, ValueTask<int>> { } 
 ```
+
+> [!IMPORTANT]
+> Always use a **generic** return type such as `Task<TResult>` or `ValueTask<TResult>`. Using a bare `Task` or `ValueTask` (without a type argument) may prevent the handler from being triggered when pipeline behaviors or validators are present.
 
 ## Handler Definition
 
@@ -152,7 +156,7 @@ public sealed class CounterStreamRequestMediatR : IStreamRequest<int> { }
 1. Sending `TRequest` to `IStreamRequest`
 
 ```csharp
-public sealed class CounterStreamRequestDispatchR : IStreamRequest<PingDispatchR, ValueTask<int>> { } 
+public sealed class CounterStreamRequestDispatchR : IStreamRequest<CounterStreamRequestDispatchR, int> { } 
 ```
 
 ## Stream Handler Definition
@@ -171,9 +175,9 @@ public sealed class CounterStreamHandlerMediatR : IStreamRequestHandler<CounterS
 ### Stream Handler DispatchR (Don't change)
 
 ```csharp
-public sealed class CounterStreamHandlerDispatchR : IStreamRequestHandler<CounterStreamHandlerDispatchR, int>
+public sealed class CounterStreamHandlerDispatchR : IStreamRequestHandler<CounterStreamRequestDispatchR, int>
 {
-    public async IAsyncEnumerable<int> Handle(CounterStreamHandlerDispatchR request, CancellationToken cancellationToken)
+    public async IAsyncEnumerable<int> Handle(CounterStreamRequestDispatchR request, CancellationToken cancellationToken)
     {
         yield return 1;
     }
@@ -248,7 +252,7 @@ public sealed class EventHandler(ILogger<Event> logger) : INotificationHandler<E
 }
 ```
 
-### Stream Pipeline DispatchR
+### Notification DispatchR
 1. Use ___ValueTask___
 
 ```csharp
@@ -259,6 +263,23 @@ public sealed class EventHandler(ILogger<Event> logger) : INotificationHandler<E
     public ValueTask Handle(Event notification, CancellationToken cancellationToken)
     {
         logger.LogInformation("Received notification");
+        return ValueTask.CompletedTask;
+    }
+}
+```
+
+#### Generic notification handler DispatchR
+1. A single open-generic handler receives **every** notification type — ideal for cross-cutting concerns such as logging, auditing, or telemetry.
+
+```csharp
+public sealed class AllNotificationsLogger<TNotification>(ILogger<AllNotificationsLogger<TNotification>> logger)
+    : INotificationHandler<TNotification>
+    where TNotification : INotification
+{
+    public ValueTask Handle(TNotification notification, CancellationToken cancellationToken)
+    {
+        logger.LogInformation("[Generic] Received notification of type {NotificationType}: {@Notification}",
+            typeof(TNotification).Name, notification);
         return ValueTask.CompletedTask;
     }
 }
