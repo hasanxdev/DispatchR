@@ -8,17 +8,17 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="BenchmarkDotNet" Version="0.15.8" />
+      <PackageReference Include="BenchmarkDotNet" />
     </ItemGroup>
         
     <ItemGroup>
-      <PackageReference Include="MediatR" Version="14.1.0" />
+      <PackageReference Include="MediatR" />
       <!-- <PackageReference Include="MediatR.Extensions.Microsoft.DependencyInjection" Version="11.1.0" /> -->
     </ItemGroup>
     
     <ItemGroup>
-        <PackageReference Include="Mediator.Abstractions" Version="3.0.2" />
-        <PackageReference Include="Mediator.SourceGenerator" Version="3.0.2">
+        <PackageReference Include="Mediator.Abstractions" />
+        <PackageReference Include="Mediator.SourceGenerator">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
         </PackageReference>
