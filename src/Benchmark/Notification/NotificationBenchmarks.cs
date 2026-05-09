@@ -3,7 +3,6 @@ using Benchmark.Notification.MultiHandlersAsync;
 using Benchmark.Notification.SingleHandler;
 using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Order;
-using DispatchR;
 using DispatchR.Extensions;
 
 namespace Benchmark.Notification;
@@ -43,6 +42,7 @@ public class NotificationBenchmarks
     public void Setup()
     {
         var services = new ServiceCollection();
+        services.AddLogging();
         services.AddMediator(opts =>
         {
             opts.ServiceLifetime = ServiceLifetime.Scoped;

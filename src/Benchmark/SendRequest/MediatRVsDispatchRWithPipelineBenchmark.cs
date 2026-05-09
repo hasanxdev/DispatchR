@@ -32,7 +32,7 @@ public class MediatRVsDispatchWithPipelineRBenchmark
     public void Setup()
     {
         var withPipelineServices = new ServiceCollection();
-        
+        withPipelineServices.AddLogging();
         withPipelineServices.AddMediatR(cfg =>
         {
             cfg.Lifetime = ServiceLifetime.Scoped;
