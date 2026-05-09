@@ -17,8 +17,7 @@ public sealed class PingHandlerMediatSg : IStreamRequestHandler<PingStreamMediat
 
 public sealed class LoggingBehaviorMediatSg : IStreamPipelineBehavior<PingStreamMediatSg, int>
 {
-    // version 2.x
-    public async IAsyncEnumerable<int> Handle(PingStreamMediatSg message, [EnumeratorCancellation] CancellationToken cancellationToken, StreamHandlerDelegate<PingStreamMediatSg, int> next)
+    public async IAsyncEnumerable<int> Handle(PingStreamMediatSg message, StreamHandlerDelegate<PingStreamMediatSg, int> next, [EnumeratorCancellation] CancellationToken cancellationToken)
     {
         await foreach (var response in next(message, cancellationToken).ConfigureAwait(false))
         {

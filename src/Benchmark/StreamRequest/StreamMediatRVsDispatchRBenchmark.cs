@@ -31,6 +31,7 @@ public class StreamMediatRVsDispatchBenchmark
     public void Setup()
     {
         var withoutPipelineServices = new ServiceCollection();
+        withoutPipelineServices.AddLogging();
         withoutPipelineServices.AddMediatR(cfg =>
         {
             cfg.Lifetime = ServiceLifetime.Scoped;

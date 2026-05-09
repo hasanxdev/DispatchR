@@ -1,4 +1,5 @@
-﻿using DispatchR.Abstractions.Stream;
+﻿using System.Runtime.CompilerServices;
+using DispatchR.Abstractions.Stream;
 
 namespace Sample.DispatchR.StreamRequest;
 
@@ -6,7 +7,7 @@ public class GenericPipelineBehavior<TRequest, TResponse>(ILogger<GenericPipelin
     : IStreamPipelineBehavior<TRequest, TResponse>
     where TRequest : class, IStreamRequest<TRequest, TResponse>
 {
-    public async IAsyncEnumerable<TResponse> Handle(TRequest request, CancellationToken cancellationToken)
+    public async IAsyncEnumerable<TResponse> Handle(TRequest request, [EnumeratorCancellation] CancellationToken cancellationToken)
     {
         logger.LogInformation("Generic Request Pipeline");
         await foreach (var response in NextPipeline.Handle(request, cancellationToken).ConfigureAwait(false))
