@@ -174,6 +174,7 @@ namespace DispatchR.Configuration
             Type syncNotificationHandlerType)
         {
             var allNotifications = allTypes
+                .Where(handlerType => handlerType.IsClass && !handlerType.IsAbstract)
                 .SelectMany(handlerType => handlerType.GetInterfaces()
                     .Where(i => i.IsGenericType && syncNotificationHandlerType == i.GetGenericTypeDefinition())
                     .Select(i => new { HandlerType = handlerType, Interface = i }))

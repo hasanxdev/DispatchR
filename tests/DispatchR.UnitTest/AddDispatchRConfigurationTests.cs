@@ -327,4 +327,32 @@ public class AddDispatchRConfigurationTests
 
         Assert.NotNull(openGenericHandler);
     }
+
+    [Fact]
+    public void AddDispatchR_RegisterNotifications_SkipsInterfaceAndAbstractHandlers()
+    {
+        // Arrange
+        var services = new ServiceCollection();
+
+        // Act
+        services.AddDispatchR(cfg =>
+        {
+            cfg.Assemblies.Add(typeof(Fixture).Assembly);
+            cfg.RegisterPipelines = false;
+            cfg.RegisterNotifications = true;
+        });
+
+        // Assert
+        Assert.DoesNotContain(services, p =>
+            p.IsKeyedService is false &&
+            p.ImplementationType == typeof(AbstractNotificationHandler));
+
+        Assert.DoesNotContain(services, p =>
+            p.IsKeyedService is false &&
+            p.ImplementationType == typeof(IWorkflowNotificationHandler<>));
+
+        Assert.Contains(services, p =>
+            p.IsKeyedService is false &&
+            p.ImplementationType == typeof(ConcreteWorkflowNotificationHandler));
+    }
 }
