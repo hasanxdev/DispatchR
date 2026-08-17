@@ -427,8 +427,8 @@ We welcome contributions to make this package even better! ❤️
 - Want to code? → Submit a PR
 
 ## Star History
-<a href="https://www.star-history.com/#hasanxdev/DispatchR&Timeline">
-  <img src="https://api.star-history.com/svg?repos=hasanxdev/DispatchR&type=Timeline" width="400"/>
+<a href="https://star-history.dera.page/#hasanxdev/DispatchR&Timeline">
+  <img src="https://star-history.dera.page/svg?repos=hasanxdev/DispatchR&type=Timeline" width="400"/>
 </a>
 
 Let's build something amazing together! 🚀
